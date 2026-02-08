@@ -107,7 +107,7 @@
                     <ul class="nav flex-column">
                         <li><a href="#" onclick="loadPage(event, 'asisten/daftarMKAsisten.html','lihatDaftarMKAsisten')" class="nav-link"><i class="bi bi-book me-2"></i>Daftar MK</a></li>
                         <li><a href="#" onclick="loadPage(event, 'asisten/daftarAsisten.html','daftarAsisten')" class="nav-link"><i class="bi bi-pencil-square me-2"></i>Daftar Sekarang</a></li>
-                        <li><a href="#" onclick="loadPage(event, 'asisten/lihatstatus.html','lihatStatus')" class="nav-link"><i class="bi bi-file-earmark-text me-2"></i>Lihat Status</a></li>
+                        <li><a href="#" onclick="loadPage(event, 'asisten/lihatStatus.html','lihatStatus')" class="nav-link"><i class="bi bi-file-earmark-text me-2"></i>Lihat Status</a></li>
                         <li><a href="#" onclick="loadPage(event, 'asisten/asistensi.html','asistensi')" class="nav-link"><i class="bi bi-person-video3 me-2"></i>Asistensi</a></li>
 
                     </ul>
@@ -304,10 +304,11 @@
             const routes = {
                 'lihatDaftarMK':'dosen/daftarMK.html',
                 'lihatPendaftar': 'dosen/lihatPendaftar.html',
-                'lihatAsisten': 'dosen/lihatAsisten.html',
+                'monitorAsisten': 'dosen/monitorAsisten.html',
                 'lihatDaftarMKAsisten':'asisten/daftarMKAsisten.html',
                 'daftarAsisten': 'asisten/daftarAsisten.html',
                 'lihatStatus': 'asisten/lihatStatus.html',
+                'asistensi': 'asisten/asistensi.html'
             };
 
             if (pageKey && routes[pageKey]) {

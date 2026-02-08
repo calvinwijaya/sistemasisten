@@ -35,5 +35,5 @@ function getNamaDosen(kode) {
 const ENDPOINT_MK = "https://script.google.com/macros/s/AKfycbz9whuSfDGFQN2xs2VpakiGElUD-3FZZtVhGaBBTcq_GnLIozoSVLT3ktSsheq_XC-XDw/exec";
 const ENDPOINT_PENDAFTARAN = "https://script.google.com/macros/s/AKfycbxa32wiCAXF_ZJMn9my8nWQ5eeZOKAXH3nAeRWzUJJXK3ymUPtd7FKZ_ttZzrNEQKYzLA/exec";
 const ENDPOINT_TERPILIH = "https://script.google.com/macros/s/AKfycbx5F_l-w67oVhaSIWU1N23xW1hzgJFXrGhPdKDJXOKxB1dbxxgIKyklYF7TRtRBknaQrg/exec";
-const ENDPOINT_LOGBOOK = "https://script.google.com/macros/s/AKfycbwwtuS4ZyuYCH8U2_2Oo4p9D5NLYoO7ZKaGoYhhjEL2FGz5A4e2qGouzCWO4pleCXMUhQ/exec";
+const ENDPOINT_LOGBOOK = "https://script.google.com/macros/s/AKfycbz74cBclp856i2owiCVT_IKTIsIWfoLYZbStW6KhTOlZINKbtMfhkofS6NzdkPrQ1M6hg/exec";
 const ENDPOINT_REVIU = "https://script.google.com/macros/s/AKfycbxvELkjeRVHeAChO1drsYKe_9ViAzoBivyDtBos98RFguKFWBErL7oHsxET3xVXxaO_Wg/exec";

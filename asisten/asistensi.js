@@ -221,6 +221,22 @@ function setupLogbookForm() {
 
     form.onsubmit = async (e) => {
         e.preventDefault();
+
+        const jamInput = document.getElementById('logJam').value.trim();
+        const jamError = document.getElementById('jamError');
+        
+        const jamRegex = /^([01]\d|2[0-3]):([0-5]\d)\s?-\s?([01]\d|2[0-3]):([0-5]\d)$/;
+
+        if (!jamRegex.test(jamInput)) {
+            jamError.style.display = 'block';
+            document.getElementById('logJam').classList.add('is-invalid');
+            return; // Berhenti jika salah
+        } else {
+            jamError.style.display = 'none';
+            document.getElementById('logJam').classList.remove('is-invalid');
+        }
+
+
         const btn = document.getElementById('btnSimpanLog');
         const user = JSON.parse(sessionStorage.getItem("user") || "{}");
         const mkRaw = document.getElementById('logDataMK').value;
@@ -252,7 +268,7 @@ function setupLogbookForm() {
                 // Data Input
                 tanggal: tglIndo,
                 mingguKe: document.getElementById('logMinggu').value,
-                jam: document.getElementById('logJam').value,
+                jam: jamInput,
                 materi: document.getElementById('logMateri').value,
                 jenis: document.getElementById('logJenis').value,
                 kehadiran: document.getElementById('logHadir').value
@@ -291,6 +307,9 @@ function editLog(l) {
     document.getElementById('logMateri').value = l.materi;
     document.getElementById('logJenis').value = l.jenis;
     document.getElementById('logHadir').value = l.kehadiran;
+
+    document.getElementById('jamError').style.display = 'none';
+    document.getElementById('logJam').classList.remove('is-invalid');
     
     // MK data di-placeholder agar tidak error saat submit
     document.getElementById('logDataMK').value = JSON.stringify({kodeMK: l.kodeMK, namaMK: l.namaMK, kelas: l.kelas});

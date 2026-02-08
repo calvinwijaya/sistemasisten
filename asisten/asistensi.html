@@ -38,6 +38,7 @@
                             <select id="logMinggu" class="form-select" required>
                                 <option value="1">1</option><option value="2">2</option>
                                 <option value="3">3</option><option value="4">4</option>
+                                <option value="5">5</option>
                             </select>
                         </div>
                         <div class="col-6 mb-3">
@@ -49,13 +50,13 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold small">Jam</label>
-                        <select id="logJam" class="form-select" required>
-                            <option value="07:15 - 09:30">07:15 - 09:30</option>
-                            <option value="09:50 - 12:20">09:50 - 12:20</option>
-                            <option value="13:00 - 15:30">13:00 - 15:30</option>
-                            <option value="15:35 - 18:05">15:35 - 18:05</option>
-                        </select>
+                        <label class="form-label fw-bold small">Jam (Format 24 Jam)</label>
+                        <input type="text" id="logJam" class="form-control" 
+                            placeholder="Contoh: 07:15 - 09:30 atau 15:30 - 18:05" 
+                            required>
+                        <div id="jamError" class="text-danger small mt-1" style="display: none;">
+                            Format jam salah! Gunakan format HH:mm - HH:mm (Contoh: 07:15 - 09:30)
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold small">Materi yang Diberikan</label>

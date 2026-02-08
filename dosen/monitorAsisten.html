@@ -1,0 +1,78 @@
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary fw-bold m-0">
+            <i class="bi bi-display me-2"></i>Monitoring Asisten
+        </h2>
+        <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="initMonitorAsisten()">
+            <i class="bi bi-arrow-clockwise me-1"></i> Refresh Data
+        </button>
+    </div>
+
+    <div id="monitorContent" class="row g-4">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Memuat data asisten...</p>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalLihatLogbook" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title"><i class="bi bi-journal-text me-2"></i>Logbook Asisten</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" style="font-size: 0.85rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tanggal</th>
+                                <th class="text-center">Minggu ke- dari bulan berjalan</th>
+                                <th class="text-center">Jam</th>
+                                <th>Materi</th>
+                                <th class="text-center">Jenis</th>
+                                <th class="text-center">Mahasiswa Hadir</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyLogbookAsisten"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalBuatReviu" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-chat-left-text me-2"></i>Berikan Reviu Asisten</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formReviuAsisten">
+                <div class="modal-body">
+                    <input type="hidden" id="revEmail">
+                    <input type="hidden" id="revKodeMK">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Nama Asisten</label>
+                        <input type="text" id="revNama" class="form-control bg-light" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">NIM</label>
+                        <input type="text" id="revNIM" class="form-control bg-light" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Reviu Kinerja</label>
+                        <textarea id="revIsi" class="form-control" rows="4" placeholder="Berikan reviu mengenai performa asisten ini..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary" id="btnSimpanReviu">Simpan Reviu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

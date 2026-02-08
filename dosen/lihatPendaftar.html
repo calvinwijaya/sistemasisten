@@ -1,0 +1,46 @@
+<link rel="stylesheet" href="dosen/daftarMK.css">
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary fw-bold m-0">
+            <i class="bi bi-people-fill me-2"></i>Daftar Pendaftar Asisten
+        </h2>
+        <div class="d-flex gap-2">
+            <button class="btn btn-light btn-sm rounded-pill px-3 border" onclick="toggleAllDetails(true)">
+                <i class="bi bi-chevron-double-down me-1"></i> Buka Semua
+            </button>
+            <button class="btn btn-light btn-sm rounded-pill px-3 border" onclick="toggleAllDetails(false)">
+                <i class="bi bi-chevron-double-up me-1"></i> Tutup Semua
+            </button>
+            <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="refreshPendaftar()">
+                <i class="bi bi-arrow-clockwise me-1"></i> Refresh Data
+            </button>
+        </div>
+    </div>
+
+    <div class="alert alert-info border-0 shadow-sm small mb-4">
+        <i class="bi bi-info-circle-fill me-2"></i> 
+        Klik pada baris mata kuliah untuk melihat daftar mahasiswa yang mendaftar.
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="tablePendaftar">
+                    <thead class="table-primary">
+                        <tr>
+                            <th style="width: 50px;">No</th>
+                            <th>Mata Kuliah</th>
+                            <th class="text-center">Kelas</th>
+                            <th class="text-center">Jadwal</th>
+                            <th class="text-center">Kuota Ast</th>
+                            <th class="text-center">Jumlah Pendaftar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listMKPendaftar">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

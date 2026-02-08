@@ -1,0 +1,111 @@
+<link rel="stylesheet" href="asisten/daftarAsisten.css">
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="text-primary fw-bold m-0">
+                <i class="bi bi-pencil-square me-2"></i>Daftar Asisten Mata Kuliah
+            </h2>
+            <div id="actionContainer" class="d-flex">
+                <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="refreshDataAsisten()">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Refresh Data
+                </button>
+            </div>
+        </div>
+
+    <div class="alert alert-warning border-0 shadow-sm mb-4" role="alert">
+        <div class="d-flex align-items-center mb-2">
+            <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+            <strong>Informasi Penting & Ketentuan:</strong>
+        </div>
+        <ul class="mb-0">
+            <li>Setiap mahasiswa hanya diperbolehkan mendaftar maksimal <b>2 (dua) posisi</b> sebagai Asisten Praktikum atau Tutor.</li>
+            <li>Sebelum melakukan pendaftaran, pastikan anda sudah mengetahui ketentuan, tugas, hak dan kewajiban Asisten Praktikum/ Tutor! 
+                Dokumen dapat dibaca pada <a href="https://drive.google.com/file/d/13e-e8LK46hjBtwxFHgGWjl_kQ2l5lmCp/view?usp=sharing" target="_blank" class="fw-bold text-dark">tautan berikut</a>.
+            </li>
+        </ul>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="input-group shadow-sm">
+                <span class="input-group-text bg-primary text-white border-primary">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" class="form-control border-primary" id="searchMK" placeholder="Cari nama mata kuliah atau kode..." onkeyup="filterMK()">
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4" id="containerDaftarMK">
+        <div class="col-12 text-center py-5">
+            <div class="spinner-border text-primary"></div>
+            <p class="mt-2">Memuat daftar mata kuliah...</p>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalDaftarAsisten" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalTitleDaftar">Form Pendaftaran Asisten</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formDaftarAsisten">
+                    <input type="hidden" id="regSemester">
+                    <input type="hidden" id="regKodeMK">
+                    <input type="hidden" id="regNamaMK">
+                    <input type="hidden" id="regKelas">
+                    <input type="hidden" id="regHari">
+                    <input type="hidden" id="regJam">
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="regEmail" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nama Lengkap</label>
+                        <input type="text" class="form-control" id="regNama" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">NIM</label>
+                        <input type="text" class="form-control" id="regNIM" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">No. HP (WhatsApp)</label>
+                        <input type="text" class="form-control" id="regHP" placeholder="Contoh: 0812345678" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nilai Teori</label>
+                            <select class="form-select" id="regNilaiTeori" required>
+                                <option value="">Pilih</option>
+                                <option value="A">A</option>
+                                <option value="A-">A-</option>
+                                <option value="A/B">A/B</option>
+                                <option value="B+">B+</option>
+                                <option value="B">B</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nilai Praktikum</label>
+                            <select class="form-select" id="regNilaiPrak" required>
+                                <option value="">Pilih</option>
+                                <option value="A">A</option>
+                                <option value="A-">A-</option>
+                                <option value="A/B">A/B</option>
+                                <option value="B+">B+</option>
+                                <option value="B">B</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="alert alert-info small">
+                        Pastikan data MK yang Anda pilih sudah sesuai sebelum klik Daftar.
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Kirim Pendaftaran</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,76 @@
+#tableMK thead th, 
+#tablePendaftar thead th,
+#tableDetailPendaftar thead th {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+    padding: 15px 10px;
+    background-color: #0d6efd !important;
+    color: white !important;
+    text-align: center;
+    vertical-align: middle;
+}
+
+#tableMK tbody tr, 
+#tablePendaftar tbody tr,
+#tableDetailPendaftar tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+#tableMK tbody td, 
+#tablePendaftar tbody td,
+#tableDetailPendaftar tbody td {
+    vertical-align: middle;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    border-color: #f1f1f1;
+}
+
+#tableMK tbody tr:hover, 
+#tablePendaftar tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+.card {
+    border: 1px solid #dee2e6 !important;
+    border-radius: 12px;
+    overflow: hidden;
+    background: white;
+}
+
+.card, 
+.card-body, 
+.table-responsive {
+    overflow: visible !important;
+}
+
+/* Hilangkan border bawah pada baris terakhir */
+table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Style tambahan untuk Badge dan Button */
+.rounded-pill {
+    border-radius: 50px !important;
+}
+
+.btn-sm {
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.dropdown-menu {
+    z-index: 1060 !important;
+    margin-top: 0 !important;
+}
+
+.dropdown-item {
+    padding: 8px 16px;
+    transition: all 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+} 

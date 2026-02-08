@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sistem Asisten – Login</title>
+  <link rel="icon" type="image/png" href="assets/logo-sistemasisten.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+
+  <div class="login-container">
+  <div class="login-card"> <img src="assets/logo2.png" alt="Logo" class="logo">
+    <h1>Selamat Datang</h1>
+    <p class="subtitle">Sistem Pendaftaran dan Penilaian Asisten Praktikum & Tutor<br>
+      Departemen Teknik Geodesi FT UGM</p>
+
+    <div id="g_id_onload"
+      data-client_id="458714585003-dfskos90b4nv8570c747kc79ft9nsv7h.apps.googleusercontent.com"
+      data-callback="handleCredentialResponse"
+      data-auto_prompt="false">
+    </div>
+
+    <div class="login-options">
+      <div class="login-group">
+        <h3 class="login-label">Login Dosen</h3>
+        <p class="login-desc">Gunakan akun SSO UGM untuk melihat dan mengelola data asisten praktikum.</p>
+        <div id="btn-dosen"></div>
+      </div>
+
+      <div class="login-divider">
+        <span>atau</span>
+      </div>
+
+      <div class="login-group">
+        <h3 class="login-label">Login Asisten</h3>
+        <p class="login-desc">Masuk dengan akun SSO UGM untuk pendaftaran asisten atau pengisian logbook kegiatan.</p>
+        <div id="btn-mahasiswa"></div>
+      </div>
+    </div>
+
+    <div id="login-message"></div>
+    
+  </div>
+
+  <footer>
+    © Departemen Teknik Geodesi FT UGM 2025
+  </footer>
+
+  <script src="js/auth.js"></script>
+
+</body>
+</html>

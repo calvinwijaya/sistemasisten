@@ -1,0 +1,172 @@
+<link rel="stylesheet" href="dosen/daftarMK.css">
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary fw-bold m-0">
+            <i class="bi bi-journal-bookmark-fill me-2"></i>Daftar Mata Kuliah
+        </h2>
+        
+        <div id="actionContainer" class="gap-2" style="display: none;">
+            <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="refreshDataMK()">
+                <i class="bi bi-arrow-clockwise me-1"></i> Refresh Data
+            </button>
+            <button class="btn btn-success btn-sm rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAjukan">
+                <i class="bi bi-plus-lg me-1"></i> Ajukan Asisten
+            </button>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text bg-primary text-white">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input 
+                    type="text" 
+                    class="form-control"
+                    id="searchMK"
+                    placeholder="Cari mata kuliah..."
+                    onkeyup="filterMK()"
+                >
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-info border-0 shadow-sm d-flex align-items-center mb-4" role="alert">
+        <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+        <div>
+            Ketentuan, Tugas, Hak dan Kewajiban Asisten Praktikum/ Tutor DTGD FT UGM dapat dilihat pada 
+            <a href="https://drive.google.com/file/d/13e-e8LK46hjBtwxFHgGWjl_kQ2l5lmCp/view?usp=sharing" target="_blank" class="fw-bold text-decoration-none">dokumen berikut</a>.
+        </div>
+    </div>
+    
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="tableMK">
+                    <thead class="table-primary"> 
+                        <tr>
+                            <th>No</th>
+                            <th>Kode Mata Kuliah</th>
+                            <th>Mata Kuliah</th>
+                            <th>Kelas</th>
+                            <th>Jadwal</th>
+                            <th>Dosen Pengampu</th>
+                            <th>Kuota Mahasiswa</th>
+                            <th>Kuota Asisten/Tutor</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listMK">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalAjukan" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Form Pengajuan Asisten</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formAjukanMK">
+                    <div class="mb-3">
+                        <label class="form-label">Kode MK</label>
+                        <input type="text" class="form-control" id="formKodeMK" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nama Mata Kuliah</label>
+                        <input type="text" class="form-control" id="formNamaMK" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Kelas</label>
+                            <input type="text" class="form-control" id="formKelas" placeholder="Misal: A" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Hari</label>
+                            <select class="form-select" id="formHari" required>
+                                <option value="">Pilih Hari</option>
+                                <option value="Senin">Senin</option>
+                                <option value="Selasa">Selasa</option>
+                                <option value="Rabu">Rabu</option>
+                                <option value="Kamis">Kamis</option>
+                                <option value="Jumat">Jumat</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Jam Kuliah</label>
+                            <select class="form-select" id="formJam" required>
+                                <option value="">Pilih Jam</option>
+                                <option value="07:15 - 09:50">07:15 - 09:50</option>
+                                <option value="09:50 - 12:20">09:50 - 12:20</option>
+                                <option value="13:00 - 15:30">13:00 - 15:30</option>
+                                <option value="15:35 - 18:05">15:35 - 18:05</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Kuota Kelas</label>
+                            <input type="number" class="form-control" id="formKuotaKelas" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Dosen Pengampu 1</label>
+                        <select class="form-select select-dosen" id="formDosen1" required></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Dosen Pengampu 2</label>
+                        <select class="form-select select-dosen" id="formDosen2"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Dosen Pengampu 3 (Opsional)</label>
+                        <select class="form-select select-dosen" id="formDosen3"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kuota Asisten diajukan</label>
+                        <input type="number" class="form-control" id="formKuotaAsisten" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Kirim Pengajuan</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('formAjukanMK').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const payload = {
+            action: "tambahMK", 
+            kodeMK: document.getElementById('formKodeMK').value,
+            namaMK: document.getElementById('formNamaMK').value,
+            kelas: document.getElementById('formKelas').value,
+            hari: document.getElementByID('formHari').value,
+            jam: document.getElementById('formJam').value,
+            kodeDosen1: document.getElementById('formDosen1').value,
+            kodeDosen2: document.getElementById('formDosen2').value || null,
+            kodeDosen3: document.getElementById('formDosen3').value || null,
+            kuotaKelas: document.getElementById('formKuotaKelas').value,
+            kuotaAsisten: document.getElementById('formKuotaAsisten').value
+        };
+
+        fetch(ENDPOINTS.dosen, {
+            method: "POST",
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === "ok") {
+                Swal.fire("Berhasil", "Pengajuan asisten telah disimpan", "success");
+                bootstrap.Modal.getInstance(document.getElementById('modalAjukan')).hide();
+                initDaftarMK(); 
+            }
+        });
+    });
+</script>

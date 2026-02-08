@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <title>Dashboard Sistem Asisten</title>
+    <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.5/dist/pizzip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docxtemplater@3.39.0/build/docxtemplater.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.37.2/docxtemplater.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.4/pizzip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+        }
+        .sidebar {
+            min-width: 250px;
+            max-width: 350px;
+            background-color: #0d6efd;
+            color: white;
+            transition: all 0.3s;
+        }
+        .sidebar.collapsed {
+            min-width: 70px;
+            max-width: 70px;
+        }
+        .sidebar .nav-link {
+            color: white;
+            white-space: nowrap;
+        }
+        .sidebar .nav-link:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.3);
+        }
+        .sidebar .nav-link .label {
+            transition: opacity 0.3s;
+        }
+        .sidebar.collapsed .nav-link .label {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .sidebar .toggle-btn {
+            cursor: pointer;
+            padding: 10px;
+            display: flex;
+            justify-content: flex-end;
+            color: white;
+        }
+        .sidebar.collapsed .toggle-btn {
+            justify-content: center;
+        }
+        .content {
+            flex: 1;
+            padding: 20px;
+            background-color: #f8f9fa;
+            transition: margin-left 0.3s;
+        }
+        .nav-link.active {
+            background-color: #0d6efd; /* Warna biru Bootstrap */
+            color: white !important;
+            border-radius: 5px;
+        }
+        .nav-link.active i {
+            color: white !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar d-flex flex-column p-2" id="sidebar">
+        <div class="toggle-btn" id="toggleSidebar">
+            <i class="bi bi-list fs-4"></i>
+        </div>
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li>
+                <a href="dashboard.html" class="nav-link">
+                    <i class="bi bi-house me-2"></i>
+                    <span class="label">Home</span>
+                </a>
+            </li>               
+            
+            <li id="menuDosen">
+                <a class="nav-link dropdown-toggle" data-bs-toggle="collapse" href="#dosenMenu" role="button" aria-expanded="false">
+                    <i class="bi bi-person-workspace me-2"></i> <span class="label">Menu Dosen</span>
+                </a>
+                <div class="collapse ps-3" id="dosenMenu">
+                    <ul class="nav flex-column">
+                        <li><a href="#" onclick="loadPage(event, 'dosen/daftarMK.html','lihatDaftarMK')" class="nav-link"><i class="bi bi-book me-2"></i>Daftar MK</a></li>
+                        <li><a href="#" onclick="loadPage(event, 'dosen/lihatPendaftar.html','lihatPendaftar')" class="nav-link"><i class="bi bi-people me-2"></i>Pendaftar</a></li>
+                        <li><a href="#" onclick="loadPage(event, 'dosen/monitorAsisten.html','monitorAsisten')" class="nav-link"><i class="bi bi-display me-2"></i>Monitor Asisten</a></li>
+                    </ul>
+                </div>
+                <li><a href="https://ugm.id/mydtgd" class="nav-link" target="_blank" rel="noopener noreferrer"><i class="bi bi-grid-fill me-2"></i><span class="label">Ke myDTGD</span></a></li>
+            </li>
+
+            <li id="menuAsisten">
+                <a class="nav-link dropdown-toggle" data-bs-toggle="collapse" href="#asistenMenu" role="button" aria-expanded="false">
+                    <i class="bi bi-person-badge me-2"></i> <span class="label">Menu Asisten</span>
+                </a>
+                <div class="collapse ps-3" id="asistenMenu">
+                    <ul class="nav flex-column">
+                        <li><a href="#" onclick="loadPage(event, 'asisten/daftarMKAsisten.html','lihatDaftarMKAsisten')" class="nav-link"><i class="bi bi-book me-2"></i>Daftar MK</a></li>
+                        <li><a href="#" onclick="loadPage(event, 'asisten/daftarAsisten.html','daftarAsisten')" class="nav-link"><i class="bi bi-pencil-square me-2"></i>Daftar Sekarang</a></li>
+                        <li><a href="#" onclick="loadPage(event, 'asisten/lihatstatus.html','lihatStatus')" class="nav-link"><i class="bi bi-file-earmark-text me-2"></i>Lihat Status</a></li>
+                        <li><a href="#" onclick="loadPage(event, 'asisten/asistensi.html','asistensi')" class="nav-link"><i class="bi bi-person-video3 me-2"></i>Asistensi</a></li>
+
+                    </ul>
+                </div>
+            </li>
+            
+            <li><a href="#" class="nav-link" id="btnLogout"><i class="bi bi-box-arrow-right me-2"></i><span class="label">Log Out</span></a></li>
+        </ul>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        <div id="mainContent">
+            <h1 class="display-4 fw-bold text-primary mb-0">Sistem Asisten</h1>
+            <h4 class="text-secondary mt-2">Selamat Datang <span id="userNama" class="fw-semibold"></span></h4>
+            <h5 class="text-muted mt-3">Sistem Manajemen dan Pengelolaan Asisten</h5>
+            <p class="text-muted">
+                Dashboard ini merupakan sistem untuk mempermudah Dosen dan Asisten Departemen Teknik Geodesi Fakultas Teknik Universitas Gadjah Mada dalam melakukan
+                manajemen dan pengelolaan asisten praktikum dan tutor.
+                <br><br><strong>Silakan pilih menu di sebelah kiri untuk mulai proses!</strong>
+            </p>
+        </div>
+    </div>
+
+    <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; color: white;">
+        <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;"></div>
+        <h5 class="fw-bold">Sedang Memproses...</h5>
+        <p class="small">Mohon tunggu sebentar.</p>
+    </div>
+
+    <script>
+        const user = JSON.parse(sessionStorage.getItem("user"));
+        const role = sessionStorage.getItem("role");
+        const ADMIN_EMAIL = "calvin.wijaya@mail.ugm.ac.id";
+
+        if (!user) {
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById("userNama").textContent = user.nama;
+
+        // Logika Role-Based Access Control (RBAC)
+        document.addEventListener("DOMContentLoaded", () => {
+            const menuDosen = document.getElementById("menuDosen");
+            const menuAsisten = document.getElementById("menuAsisten");
+
+            if (user.email === ADMIN_EMAIL) {
+                return;
+            }
+
+            if (role === "mahasiswa") {
+                // Sembunyikan menu Dosen sepenuhnya
+                if (menuDosen) menuDosen.remove(); 
+                
+                // Tambahkan proteksi tambahan: jika mahasiswa mencoba akses page dosen via URL
+                const params = new URLSearchParams(window.location.search);
+                if (params.get("page") && params.get("page").includes("lihat")) {
+                    Swal.fire('Akses Ditolak', 'Mahasiswa tidak diizinkan mengakses menu ini.', 'error');
+                    window.location.href = 'dashboard.html';
+                }
+            } else if (role === "dosen") {
+                // Sembunyikan menu Asisten sepenuhnya
+                if (menuAsisten) menuAsisten.remove();
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const role = sessionStorage.getItem("role");
+            const user = JSON.parse(sessionStorage.getItem("user"));
+            const isAdmin = user?.email === "calvin.wijaya@mail.ugm.ac.id";
+
+            if (role === "dosen" || isAdmin) {
+                const dosenMenu = document.getElementById("dosenMenu");
+                if (dosenMenu) dosenMenu.classList.add("show");
+            } 
+            
+            if (role === "mahasiswa" || isAdmin) {
+                const asistenMenu = document.getElementById("asistenMenu");
+                if (asistenMenu) asistenMenu.classList.add("show");
+            }
+        });
+    </script>
+
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.getElementById('toggleSidebar').addEventListener('click', function () {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+
+            // Tutup semua submenu ketika sidebar dicollapse
+            if (sidebar.classList.contains('collapsed')) {
+                document.querySelectorAll('.sidebar .collapse.show').forEach(el => {
+                    const bsCollapse = bootstrap.Collapse.getInstance(el);
+                    if (bsCollapse) {
+                        bsCollapse.hide();
+                    } else {
+                        new bootstrap.Collapse(el, { toggle: false }).hide();
+                    }
+                });
+            }
+        });
+
+        function loadPage(eventOrPage, pagePath, key) {
+            let finalPage, finalKey;
+
+            if (typeof eventOrPage === 'object' && eventOrPage !== null) {
+                if (eventOrPage.preventDefault) eventOrPage.preventDefault();
+                finalPage = pagePath;
+                finalKey = key;
+            } else {
+                finalPage = eventOrPage;
+                finalKey = pagePath;
+            }
+
+            if (!finalPage || !finalKey || finalKey === "undefined") return;
+
+            fetch(finalPage)
+                .then(res => {
+                    if (!res.ok) throw new Error("Gagal mengambil file");
+                    return res.text();
+                })
+                .then(html => {
+                    document.getElementById("mainContent").innerHTML = html;
+
+                    const newUrl = window.location.origin + window.location.pathname + `?page=${finalKey}`;
+                    history.pushState({ page: finalPage, key: finalKey }, "", newUrl);
+
+                    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'))
+                    const activeLink = document.querySelector(`a[onclick*="'${finalKey}'"]`);
+                    if (activeLink) activeLink.classList.add('active');
+
+                    if (finalKey === 'lihatDaftarMK') {
+                        loadScript('dosen/daftarMK.js', () => {
+                        if (typeof initDaftarMK === 'function') initDaftarMK();
+                        });
+                    } else if (finalKey === 'lihatPendaftar') {
+                        loadScript('dosen/lihatPendaftar.js', () => {
+                            if (typeof initLihatPendaftar === 'function') initLihatPendaftar();
+                        });
+                    } else if (finalKey === 'monitorAsisten') {
+                        loadScript('dosen/monitorAsisten.js', () => {
+                            if (typeof initMonitorAsisten === 'function') initMonitorAsisten();
+                        });
+                    } else if (finalKey === 'lihatDaftarMKAsisten') {
+                        loadScript('asisten/daftarMKAsisten.js', () => {
+                            if (typeof initDaftarMKAsisten === 'function') initDaftarMKAsisten();
+                        });
+                    } else if (finalKey === 'daftarAsisten') {
+                        loadScript('asisten/daftarAsisten.js', () => {
+                            if (typeof initDaftarAsisten === 'function') initDaftarAsisten();
+                        });
+                    } else if (finalKey === 'lihatStatus') {
+                        loadScript('asisten/lihatStatus.js', () => {
+                            if (typeof initLihatStatus === 'function') initLihatStatus();
+                        });
+                    } else if (finalKey === 'asistensi') {
+                        loadScript('asisten/asistensi.js', () => {
+                            if (typeof initAsistensi === 'function') initAsistensi();
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById("mainContent").innerHTML = 
+                        "<p class='text-danger'>Gagal memuat halaman.</p>";
+                });
+        }
+
+        function loadScript(src, callback) {
+            const existing = document.querySelector(`script[src="${src}"]`);
+            if (existing) existing.remove();
+
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = callback;
+            document.body.appendChild(script);
+        }
+
+        // Menangani kondisi ketika user menekan tombol 'Back' atau 'Forward' di browser
+        window.onpopstate = function(event) {
+            if (event.state && event.state.page) {
+                loadPage(event.state.page, event.state.key);
+            } else {
+                window.location.href = window.location.pathname; 
+            }
+        };
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const params = new URLSearchParams(window.location.search);
+            const pageKey = params.get("page");
+
+            const routes = {
+                'lihatDaftarMK':'dosen/daftarMK.html',
+                'lihatPendaftar': 'dosen/lihatPendaftar.html',
+                'lihatAsisten': 'dosen/lihatAsisten.html',
+                'lihatDaftarMKAsisten':'asisten/daftarMKAsisten.html',
+                'daftarAsisten': 'asisten/daftarAsisten.html',
+                'lihatStatus': 'asisten/lihatStatus.html',
+            };
+
+            if (pageKey && routes[pageKey]) {
+                loadPage(routes[pageKey], pageKey);
+            }
+        });
+    </script>
+    <script>
+        document.getElementById("btnLogout").addEventListener("click", (e) => {
+            e.preventDefault();
+
+            Swal.fire({
+                title: 'Keluar dari Sistem?',
+                text: "Anda harus login kembali untuk mengakses data penilaian.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Keluar',
+                cancelButtonText: 'Batal',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    performLogout();
+                }
+            });
+        });
+
+        function performLogout() {
+            try {
+                const userRaw = sessionStorage.getItem("user");
+                const user = userRaw ? JSON.parse(userRaw) : null;
+                const email = user?.email;
+
+                if (window.google?.accounts?.id) {
+                    google.accounts.id.disableAutoSelect();
+                    if (email) {
+                        google.accounts.id.revoke(email, () => {
+                            console.log("Google session revoked");
+                        });
+                    }
+                }
+            } catch (err) {
+                console.warn("Logout cleanup error:", err);
+            }
+
+            sessionStorage.clear();
+            localStorage.clear();
+            
+            // Optional: Show a quick success message before redirecting
+            Swal.fire({
+                title: 'Berhasil Keluar',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                window.location.href = "index.html";
+            });
+        }
+    </script>
+    <script src="config.js"></script>
+</body>
+</html>

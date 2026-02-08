@@ -1,0 +1,135 @@
+/* Menggunakan font yang lebih modern jika tersedia, fallback ke Sans-Serif */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: #f0f2f5;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  color: #333;
+}
+
+.login-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+/* Pembungkus kartu agar tampilan lebih terpusat dan rapi */
+.login-card {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 450px;
+  width: 100%;
+  text-align: center;
+}
+
+.logo {
+  width: 220px; /* Ukuran lebih proporsional */
+  height: auto;
+  margin-bottom: 24px;
+}
+
+h1 {
+  margin: 0 0 10px 0;
+  font-size: 1.8rem;
+  color: #1e60a2;
+  line-height: 1.2;
+}
+
+.subtitle {
+  margin: 0 auto 30px auto;
+  font-size: 0.95rem;
+  color: #555;
+  line-height: 1.5;
+  max-width: 320px;
+}
+
+/* Bagian Opsi Login */
+.login-options {
+  width: 100%;
+  margin-top: 20px;
+}
+
+.login-group {
+  margin-bottom: 20px;
+}
+
+.login-label {
+  font-size: 1rem;
+  color: #2c3e50;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.login-desc {
+  font-size: 0.8rem;
+  color: #7f8c8d;
+  margin-bottom: 12px;
+}
+
+/* Divider Estetik */
+.login-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 24px 0;
+  color: #bdc3c7;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #eee;
+}
+
+.login-divider:not(:empty)::before { margin-right: 1em; }
+.login-divider:not(:empty)::after { margin-left: 1em; }
+
+/* Tombol Google */
+#btn-dosen, #btn-mahasiswa {
+  display: flex;
+  justify-content: center;
+  min-height: 40px;
+}
+
+/* Pesan Status */
+#login-message {
+  margin-top: 20px;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  display: none; /* Sembunyikan jika kosong */
+}
+
+#login-message.success {
+  display: block;
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+#login-message.error {
+  display: block;
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+footer {
+  padding: 20px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #95a5a6;
+  background-color: transparent;
+}

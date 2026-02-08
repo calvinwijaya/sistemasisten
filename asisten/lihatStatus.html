@@ -1,0 +1,82 @@
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary fw-bold mb-0"><i class="bi bi-file-earmark-text me-2"></i>Status Pendaftaran</h2>
+        <button class="btn btn-outline-primary" onclick="initLihatStatus()">
+            <i class="bi bi-arrow-clockwise"></i> Refresh Data
+        </button>
+    </div>
+
+    <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center mb-4">
+        <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+        <div>
+            <strong>Informasi Penting:</strong> Berdasarkan kebijakan Departemen, setiap mahasiswa hanya diperbolehkan mendaftar maksimal <b>2 (dua) posisi</b> sebagai Asisten Praktikum atau Tutor.
+        </div>
+    </div>
+
+    <div id="containerStatusMK" class="row g-4">
+        <div class="col-12 text-center py-5">
+            <div class="spinner-border text-primary"></div>
+            <p class="mt-2">Memuat asisten mata kuliah terdaftar...</p>
+        </div>    
+    </div>
+</div>
+
+<div class="modal fade" id="modalEditPendaftaran" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Edit Data Pendaftaran</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formEditAsisten">
+                <div class="modal-body">
+                    <input type="hidden" id="editRegId">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Email</label>
+                        <input type="text" id="editEmail" class="form-control bg-light text-muted" readonly>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Nama</label>
+                            <input type="text" id="editNama" class="form-control bg-light text-muted" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">NIM</label>
+                            <input type="text" id="editNIM" class="form-control bg-light text-muted" readonly>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nomor HP (WhatsApp)</label>
+                        <input type="text" id="editHP" class="form-control" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nilai Teori</label>
+                            <select id="editNilaiTeori" class="form-select" required>
+                                <option value="A">A</option>
+                                <option value="A-">A-</option>
+                                <option value="A/B">A/B</option>
+                                <option value="B+">B+</option>
+                                <option value="B">B</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nilai Praktikum</label>
+                            <select id="editNilaiPrak" class="form-select" required>
+                                <option value="A">A</option>
+                                <option value="A-">A-</option>
+                                <option value="A/B">A/B</option>
+                                <option value="B+">B+</option>
+                                <option value="B">B</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,62 @@
+<link rel="stylesheet" href="dosen/daftarMK.css"> 
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary fw-bold m-0">
+            <i class="bi bi-journal-text me-2"></i>Daftar Mata Kuliah
+        </h2>
+        <div id="actionContainer" class="d-flex gap-2">
+            <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="refreshDataMK()">
+                <i class="bi bi-arrow-clockwise me-1"></i> Refresh Data
+            </button>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text bg-primary text-white">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input 
+                    type="text" 
+                    class="form-control"
+                    id="searchMK"
+                    placeholder="Cari mata kuliah..."
+                    onkeyup="filterMK()"
+                >
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-info border-0 shadow-sm d-flex align-items-center mb-4" role="alert">
+        <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+        <div>
+            Ketentuan, Tugas, Hak dan Kewajiban Asisten Praktikum/ Tutor DTGD FT UGM dapat dilihat pada 
+            <a href="https://drive.google.com/file/d/13e-e8LK46hjBtwxFHgGWjl_kQ2l5lmCp/view?usp=sharing" target="_blank" class="fw-bold text-decoration-none">dokumen berikut</a>.
+        </div>
+    </div>
+    
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="tableMK">
+                    <thead class="table-primary"> 
+                        <tr>
+                            <th>No</th>
+                            <th>Kode Mata Kuliah</th>
+                            <th>Mata Kuliah</th>
+                            <th>Kelas</th>
+                            <th>Jadwal</th>
+                            <th>Dosen Pengampu</th>
+                            <th>Kuota Mahasiswa</th>
+                            <th>Kuota Asisten/Tutor</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listMK">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

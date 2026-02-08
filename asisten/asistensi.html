@@ -1,0 +1,76 @@
+<link rel="stylesheet" href="dosen/daftarMK.css">
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary fw-bold m-0">
+            <i class="bi bi-person-video3 me-2"></i>Manajemen Asistensi
+        </h2>
+        <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="initAsistensi()">
+            <i class="bi bi-arrow-clockwise me-1"></i> Refresh Data
+        </button>
+    </div>
+
+    <div id="asistensiContent">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2">Memvalidasi hak akses...</p>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalLogbook" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="logbookTitle">Buat Logbook Baru</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formLogbook">
+                <div class="modal-body">
+                    <input type="hidden" id="logId">
+                    <input type="hidden" id="logDataMK"> <div class="mb-3">
+                        <label class="form-label fw-bold small">Tanggal</label>
+                        <input type="date" id="logTanggal" class="form-control" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label fw-bold small">Minggu Ke- (dari bulan berjalan)</label>
+                            <select id="logMinggu" class="form-select" required>
+                                <option value="1">1</option><option value="2">2</option>
+                                <option value="3">3</option><option value="4">4</option>
+                            </select>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label fw-bold small">Jenis</label>
+                            <select id="logJenis" class="form-select" required>
+                                <option value="Praktikum">Praktikum</option>
+                                <option value="Tutor">Tutor</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Jam</label>
+                        <select id="logJam" class="form-select" required>
+                            <option value="07:15 - 09:30">07:15 - 09:30</option>
+                            <option value="09:50 - 12:20">09:50 - 12:20</option>
+                            <option value="13:00 - 15:30">13:00 - 15:30</option>
+                            <option value="15:35 - 18:05">15:35 - 18:05</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Materi yang Diberikan</label>
+                        <textarea id="logMateri" class="form-control" rows="3" placeholder="Tuliskan detail materi..." required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Jumlah Mahasiswa Hadir</label>
+                        <input type="number" id="logHadir" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" id="btnSimpanLog" class="btn btn-primary">Buat Logbook</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

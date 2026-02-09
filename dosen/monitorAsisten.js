@@ -95,7 +95,7 @@ function renderCards(myMK, allAsisten) {
 
 async function lihatLogbook(email, kodeMK, kelas) {
     const tbody = document.getElementById("bodyLogbookAsisten");
-    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary"></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary"></div></td></tr>';
     new bootstrap.Modal(document.getElementById('modalLihatLogbook')).show();
 
     try {
@@ -104,7 +104,7 @@ async function lihatLogbook(email, kodeMK, kelas) {
         const filteredLogs = allLogs.filter(l => l.email === email && l.kodeMK === kodeMK && l.kelas === kelas);
 
         if (filteredLogs.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">Belum ada catatan logbook.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada catatan logbook.</td></tr>';
             return;
         }
 
@@ -116,10 +116,17 @@ async function lihatLogbook(email, kodeMK, kelas) {
                 <td>${l.materi}</td>
                 <td class="text-center"><span class="badge bg-light text-dark border">${l.jenis === "Praktikum" ? "P" : "T"}</span></td>
                 <td class="text-center">${l.kehadiran}</td>
+                <td class="text-center">
+                    ${l.linkDrive ? `
+                        <a href="${l.linkDrive}" target="_blank" class="btn btn-xs btn-info text-white py-0 px-2 shadow-sm" style="font-size: 0.7rem;">
+                            <i class="bi bi-eye-fill me-1"></i> Lihat
+                        </a>
+                    ` : '<span class="text-muted small">-</span>'}
+                </td>
             </tr>
         `).join('');
     } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger">Gagal memuat logbook.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-danger">Gagal memuat logbook.</td></tr>';
     }
 }
 

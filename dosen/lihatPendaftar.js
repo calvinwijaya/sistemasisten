@@ -49,6 +49,7 @@ async function refreshPendaftar() {
             // Cari pendaftar untuk MK + Kelas ini dari hasil fetch pendaftaran
             const pendaftarMK = allPendaftar.filter(p => p.kodeMK === mk.kodeMK && p.kelas === mk.kelas);
             const targetId = `collapse-${i}`;
+            const isPraktikum = mk.namaMK.toLowerCase().includes("praktikum");
 
             return `
                 <tr class="mk-row-pendaftar fw-semibold" style="cursor: pointer;" 
@@ -74,7 +75,9 @@ async function refreshPendaftar() {
                                         <th class="text-center py-2">No</th>
                                         <th>Nama Mahasiswa</th>
                                         <th class="text-center">NIM</th>
-                                        <th class="text-center">Nilai (Teori & Praktek)</th>
+                                        <th class="text-center">
+                                            ${isPraktikum ? 'Nilai (Teori & Praktik)' : 'Nilai Kuliah'}
+                                        </th>
                                         <th class="text-center">WhatsApp</th>
                                         <th class="text-center">Reviu</th>
                                         <th class="text-center">Status</th>
@@ -105,7 +108,20 @@ async function refreshPendaftar() {
                                             <td class="text-center">${idx + 1}</td>
                                             <td class="small fw-bold">${p.nama}</td>
                                             <td class="text-center small">${p.nim}</td>
-                                            <td class="text-center small">${p.nilaiTeori} & ${p.nilaiPrak}</td>
+                                            <td class="text-center small">
+                                                ${(() => {
+                                                    // LOGIKA DINAMIS KOLOM NILAI
+                                                    const isPraktikum = mk.namaMK.toLowerCase().includes("praktikum");
+                                                    if (isPraktikum) {
+                                                        // Jika Praktikum, tampilkan Teori & Praktik
+                                                        return `<span class="badge bg-light text-dark border">T: ${p.nilaiTeori}</span> </br>
+                                                                <span class="badge bg-light text-dark border">P: ${p.nilaiPrak}</span>`;
+                                                    } else {
+                                                        // Jika Tutor (Bukan Praktikum), tampilkan Teori saja
+                                                        return `<span class="badge bg-light text-dark border">${p.nilaiTeori}</span>`;
+                                                    }
+                                                })()}
+                                            </td>
                                             <td class="text-center">
                                                 <a href="https://wa.me/0${p.noHP}" target="_blank" class="btn btn-xs btn-success py-0 px-2 small" style="font-size: 0.7rem;">
                                                     <i class="bi bi-whatsapp"></i> Hubungi

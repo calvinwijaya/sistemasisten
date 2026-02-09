@@ -116,8 +116,9 @@ function renderTabelAsistensi(data, allLogs) {
                                                         <th>Tanggal</th>
                                                         <th class="text-center">Minggu ke- di bulan</th>
                                                         <th class="text-center">Jam</th>
-                                                        <th>Materi</th>
+                                                        <th>Materi/ Aktivitas</th>
                                                         <th class="text-center">Hadir</th>
+                                                        <th class="text-center">Dokumentasi</th> </tr>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -132,6 +133,9 @@ function renderTabelAsistensi(data, allLogs) {
                                                             <td class="text-center">${l.jam}</td>
                                                             <td>${l.materi}</td>
                                                             <td class="text-center">${l.kehadiran}</td>
+                                                            <td class="text-center">
+                                                                ${l.linkDrive ? `<a href="${l.linkDrive}" target="_blank" class="btn btn-xs btn-outline-info py-0 px-2 shadow-sm" style="font-size: 0.7rem;"><i class="bi bi-link-45deg"></i> Link</a>` : '<span class="text-muted">-</span>'}
+                                                            </td>
                                                         </tr>
                                                     `).join('') : `<tr><td colspan="6" class="text-center p-3 text-muted">Belum ada logbook. Klik tombol + untuk menambah.</td></tr>`}
                                                 </tbody>
@@ -236,6 +240,19 @@ function setupLogbookForm() {
             document.getElementById('logJam').classList.remove('is-invalid');
         }
 
+        const driveInput = document.getElementById('logDrive').value.trim();
+        const driveError = document.getElementById('driveError');
+        // Regex sederhana untuk mengecek domain google drive
+        const driveRegex = /drive\.google\.com/;
+
+        if (!driveRegex.test(driveInput)) {
+            driveError.style.display = 'block';
+            document.getElementById('logDrive').classList.add('is-invalid');
+            return;
+        } else {
+            driveError.style.display = 'none';
+            document.getElementById('logDrive').classList.remove('is-invalid');
+        }
 
         const btn = document.getElementById('btnSimpanLog');
         const user = JSON.parse(sessionStorage.getItem("user") || "{}");
@@ -271,7 +288,8 @@ function setupLogbookForm() {
                 jam: jamInput,
                 materi: document.getElementById('logMateri').value,
                 jenis: document.getElementById('logJenis').value,
-                kehadiran: document.getElementById('logHadir').value
+                kehadiran: document.getElementById('logHadir').value,
+                linkDrive: driveInput
             };
 
             const response = await fetch(ENDPOINT_LOGBOOK, { 
@@ -304,12 +322,16 @@ function editLog(l) {
     document.getElementById('logTanggal').value = formatToInputDate(l.tanggal);
     document.getElementById('logMinggu').value = l.mingguKe;
     document.getElementById('logJam').value = l.jam;
+    document.getElementById('logDrive').value = l.linkDrive || "";
     document.getElementById('logMateri').value = l.materi;
     document.getElementById('logJenis').value = l.jenis;
     document.getElementById('logHadir').value = l.kehadiran;
 
     document.getElementById('jamError').style.display = 'none';
     document.getElementById('logJam').classList.remove('is-invalid');
+
+    document.getElementById('driveError').style.display = 'none';
+    document.getElementById('logDrive').classList.remove('is-invalid');
     
     // MK data di-placeholder agar tidak error saat submit
     document.getElementById('logDataMK').value = JSON.stringify({kodeMK: l.kodeMK, namaMK: l.namaMK, kelas: l.kelas});

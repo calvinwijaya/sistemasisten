@@ -59,12 +59,23 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold small">Materi yang Diberikan</label>
-                        <textarea id="logMateri" class="form-control" rows="3" placeholder="Tuliskan detail materi..." required></textarea>
+                        <label class="form-label fw-bold small">Materi yang Diberikan/ Aktivitas yang dilakukan</label>
+                        <textarea id="logMateri" class="form-control" rows="3" placeholder="Tuliskan detail materi atau aktivitas yang dilakukan..." required></textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold small">Jumlah Mahasiswa Hadir</label>
                         <input type="number" id="logHadir" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Link Dokumentasi (Google Drive)</label>
+                        <input type="url" id="logDrive" class="form-control" 
+                            placeholder="https://drive.google.com/..." required>
+                        <div id="driveError" class="text-danger small mt-1" style="display: none;">
+                            Tautan harus berupa link Google Drive yang valid!
+                        </div>
+                        <div class="form-text" style="font-size: 0.7rem;">
+                            Pastikan akses link sudah diatur ke "Siapa saja yang memiliki link" agar dosen dapat melihat.
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer bg-light">

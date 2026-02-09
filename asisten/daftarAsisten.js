@@ -79,6 +79,19 @@ function bukaModalDaftar(semester, kode, nama, kelas, hari, jam) {
     document.getElementById('regHari').value = hari;
     document.getElementById('regJam').value = jam;
 
+    const containerPrak = document.getElementById('containerNilaiPrak');
+    const inputPrak = document.getElementById('regNilaiPrak');
+    
+    // Jika nama MK mengandung "Praktikum" (tidak peka huruf besar/kecil)
+    if (nama.toLowerCase().includes("praktikum")) {
+        containerPrak.style.display = "block";
+        inputPrak.required = true;
+    } else {
+        containerPrak.style.display = "none";
+        inputPrak.required = false;
+        inputPrak.value = "-";
+    }
+
     // Isi data diri dari Session Storage
     const user = JSON.parse(sessionStorage.getItem("user") || "{}");
     document.getElementById('regEmail').value = user.email || "";

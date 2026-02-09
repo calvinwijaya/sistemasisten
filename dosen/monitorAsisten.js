@@ -182,12 +182,22 @@ function setupReviuListener() {
     };
 }
 
-function filterMK() {
-    const keyword = document.getElementById("searchMK").value.toLowerCase();
+// Fungsi Filter
+function filterMKMonitor() {
+    const keyword = document.getElementById("searchMKMonitor").value.toLowerCase();
+    // Ambil semua elemen kartu mata kuliah yang memiliki class 'monitor-card'
     const cards = document.querySelectorAll(".monitor-card");
 
     cards.forEach(card => {
-        const namaMK = card.getAttribute("data-nama");
-        card.style.display = namaMK.includes(keyword) ? "" : "none";
+        // Kita ambil data-nama yang sudah kita set saat renderCards atau teks di dalam card
+        const namaMK = card.getAttribute("data-nama") || "";
+        const kodeMK = card.querySelector(".badge")?.textContent.toLowerCase() || "";
+        
+        // Cek apakah keyword ada di nama MK atau kode MK
+        if (namaMK.includes(keyword) || kodeMK.includes(keyword)) {
+            card.style.display = ""; // Tampilkan
+        } else {
+            card.style.display = "none"; // Sembunyikan
+        }
     });
 }

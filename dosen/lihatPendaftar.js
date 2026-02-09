@@ -370,3 +370,31 @@ async function generateLaporanTerpilih(mk, allPendaftar) {
         Swal.fire("Error", "Gagal mengenerate laporan. Pastikan folder template dan library docxtemplater sudah benar.", "error");
     }
 }
+
+// Fungsi filter MK:
+function filterMKPendaftar() {
+    const keyword = document.getElementById("searchMKPendaftar").value.toLowerCase();
+    // Ambil semua baris utama mata kuliah
+    const rows = document.querySelectorAll(".mk-row-pendaftar");
+
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const show = text.includes(keyword);
+        
+        // Cari baris collapse setelah baris ini
+        const nextRow = row.nextElementSibling;
+        
+        if (show) {
+            row.style.display = "";
+            // Jika baris utama tampil, jangan ganggu baris collapse 
+            // (biarkan dia tetap sembunyi kecuali user klik baris utamanya)
+        } else {
+            row.style.display = "none";
+            // Jika baris utama sembunyi, baris collapse WAJIB sembunyi
+            if (nextRow && nextRow.classList.contains('collapse-row')) {
+                nextRow.style.display = "none";
+                nextRow.classList.remove('show');
+            }
+        }
+    });
+}

@@ -229,7 +229,7 @@ function setupLogbookForm() {
         const jamInput = document.getElementById('logJam').value.trim();
         const jamError = document.getElementById('jamError');
         
-        const jamRegex = /^([01]\d|2[0-3]):([0-5]\d)\s?-\s?([01]\d|2[0-3]):([0-5]\d)$/;
+        const jamRegex = /^([01]\d|2[0-3]):([0-5]\d)\s-\s([01]\d|2[0-3]):([0-5]\d)$/;
 
         if (!jamRegex.test(jamInput)) {
             jamError.style.display = 'block';

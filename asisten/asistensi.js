@@ -118,7 +118,8 @@ function renderTabelAsistensi(data, allLogs) {
                                                         <th class="text-center">Jam</th>
                                                         <th>Materi/ Aktivitas</th>
                                                         <th class="text-center">Hadir</th>
-                                                        <th class="text-center">Dokumentasi</th> </tr>
+                                                        <th class="text-center">Dokumentasi</th> 
+                                                        <th>Catatan Dosen</th> </tr>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -136,8 +137,11 @@ function renderTabelAsistensi(data, allLogs) {
                                                             <td class="text-center">
                                                                 ${l.linkDrive ? `<a href="${l.linkDrive}" target="_blank" class="btn btn-xs btn-outline-info py-0 px-2 shadow-sm" style="font-size: 0.7rem;"><i class="bi bi-link-45deg"></i> Link</a>` : '<span class="text-muted">-</span>'}
                                                             </td>
+                                                            <td class="small italic text-primary">
+                                                                ${l.catatanDosen ? `<span><i class="bi bi-chat-left-text me-1"></i> ${l.catatanDosen}</span>` : '<span class="text-muted small">-</span>'}
+                                                            </td>
                                                         </tr>
-                                                    `).join('') : `<tr><td colspan="6" class="text-center p-3 text-muted">Belum ada logbook. Klik tombol + untuk menambah.</td></tr>`}
+                                                    `).join('') : `<tr><td colspan="8" class="text-center p-3 text-muted">Belum ada logbook. Klik tombol + untuk menambah.</td></tr>`}
                                                 </tbody>
                                             </table>
                                         </div>
@@ -396,6 +400,10 @@ async function generateWord(kodeMK, kelas, dataMK) {
             return urutanBulan.indexOf(a) - urutanBulan.indexOf(b);
         });
 
+        // Ambil nilai SKS dari salah satu entri logbook yang sudah di-filter
+        // Karena satu MK pasti SKS-nya sama, kita ambil dari log pertama saja
+        const sksValue = myLogs.length > 0 ? myLogs[0].sks : "-";
+
         const perBulan = bulanTersedia.map(namaBulan => {
             return {
                 Bulan: namaBulan,
@@ -408,6 +416,7 @@ async function generateWord(kodeMK, kelas, dataMK) {
                     materi: l.materi,
                     jenis: l.jenis === "Praktikum" ? "P" : "T",
                     hadir: l.kehadiran,
+                    catatanDosen: l.catatanDosen || "",
                     catatan: "",
                     ttd: ""
                 }))
@@ -424,6 +433,7 @@ async function generateWord(kodeMK, kelas, dataMK) {
         const dataRender = {
             Semester: dataMK.semester || "Genap 25/26",
             NamaMK: dataMK.namaMK,
+            SKS: sksValue,
             Dosen1: getNamaDosen(dataMK.dosen1),
             Dosen2: getNamaDosen(dataMK.dosen2),
             Dosen3: getNamaDosen(dataMK.dosen3),

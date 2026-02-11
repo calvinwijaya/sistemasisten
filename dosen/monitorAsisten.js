@@ -98,7 +98,7 @@ function renderCards(myMK, allAsisten) {
 
 async function lihatLogbook(email, kodeMK, kelas) {
     const tbody = document.getElementById("bodyLogbookAsisten");
-    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary"></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary"></div></td></tr>';
     new bootstrap.Modal(document.getElementById('modalLihatLogbook')).show();
 
     try {
@@ -107,7 +107,7 @@ async function lihatLogbook(email, kodeMK, kelas) {
         const filteredLogs = allLogs.filter(l => l.email === email && l.kodeMK === kodeMK && l.kelas === kelas);
 
         if (filteredLogs.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada catatan logbook.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">Belum ada catatan logbook.</td></tr>';
             return;
         }
 
@@ -126,10 +126,18 @@ async function lihatLogbook(email, kodeMK, kelas) {
                         </a>
                     ` : '<span class="text-muted small">-</span>'}
                 </td>
+                <td>
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" id="note-${l.logId}" value="${l.catatanDosen || ''}" placeholder="Tulis catatan...">
+                        <button class="btn btn-success" onclick="simpanCatatan('${l.logId}')">
+                            <i class="bi bi-check-lg"></i>
+                        </button>
+                    </div>
+                </td>
             </tr>
         `).join('');
     } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-danger">Gagal memuat logbook.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-danger">Gagal memuat logbook.</td></tr>';
     }
 }
 
@@ -183,6 +191,43 @@ function setupReviuListener() {
             btn.innerText = "Simpan Reviu";
         }
     };
+}
+
+// Fungsi simpan catatan dosen
+async function simpanCatatan(logId) {
+    const input = document.getElementById(`note-${logId}`);
+    const originalText = input.value;
+    
+    // UI Feedback
+    input.disabled = true;
+    const btn = input.nextElementSibling;
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
+
+    const payload = {
+        action: "updateCatatanDosen",
+        logId: logId,
+        catatan: originalText
+    };
+
+    try {
+        const res = await fetch(ENDPOINT_LOGBOOK, { 
+            method: "POST", 
+            body: JSON.stringify(payload) 
+        });
+        const result = await res.text();
+        
+        if (result === "Success_Note") {
+            input.classList.add('is-valid');
+            setTimeout(() => input.classList.remove('is-valid'), 2000);
+        }
+    } catch (err) {
+        Swal.fire("Error", "Gagal menyimpan catatan.", "error");
+    } finally {
+        input.disabled = false;
+        btn.disabled = false;
+        btn.innerHTML = `<i class="bi bi-check-lg"></i>`;
+    }
 }
 
 // Fungsi Filter

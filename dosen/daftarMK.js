@@ -5,12 +5,12 @@ function initDaftarMK() {
 
     const role = sessionStorage.getItem("role");
     const user = JSON.parse(sessionStorage.getItem("user"));
-    const ADMIN_EMAIL = "calvin.wijaya@mail.ugm.ac.id";
 
     const actionContainer = document.getElementById("actionContainer");
     if (actionContainer) {
-        if (role === "dosen" || user?.email === ADMIN_EMAIL) {
-            actionContainer.style.setProperty("display", "flex", "important");
+        if (role === "dosen" || ADMIN_EMAILS.includes(user?.email)) {
+            const btn = document.getElementById("actionContainer");
+            if (btn) btn.style.display = "block";
             populateDosenDropdown();
             
             // PENTING: Panggil listener form di sini agar aktif

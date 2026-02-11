@@ -1,3 +1,8 @@
+const ADMIN_EMAILS = [
+    "calvin.wijaya@mail.ugm.ac.id",
+    "cecep.pratama@ugm.ac.id"
+];
+
 const DOSEN_MAP = {
     "HRT": "Prof. Dr. Ir. Harintaka, S.T., M.T., IPU., ASEAN Eng.",
     "NRW": "Prof. Ir. Nurrohmat Widjajanti, M.T., Ph.D., IPU., ASEAN Eng., APEC Eng.",

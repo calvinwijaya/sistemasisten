@@ -2,6 +2,7 @@ async function initMonitorAsisten() {
     const container = document.getElementById("monitorContent");
     const user = JSON.parse(sessionStorage.getItem("user") || "{}");
     const emailDosen = user.email;
+    const isAdmin = ADMIN_EMAILS.includes(user?.email);
 
     if (!container) return;
 
@@ -23,8 +24,10 @@ async function initMonitorAsisten() {
 
         // Filter MK yang diampu dosen login
         const myMK = allMK.filter(mk => 
-            mk.emailDosen1 === emailDosen || mk.emailDosen2 === emailDosen || mk.emailDosen3 === emailDosen ||
-            emailDosen === "calvin.wijaya@mail.ugm.ac.id"
+            mk.emailDosen1 === emailDosen || 
+            mk.emailDosen2 === emailDosen || 
+            mk.emailDosen3 === emailDosen ||
+            isAdmin
         );
 
         if (myMK.length === 0) {

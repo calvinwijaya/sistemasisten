@@ -7,6 +7,7 @@ async function refreshPendaftar() {
     const tbody = document.getElementById("listMKPendaftar");
     const user = JSON.parse(sessionStorage.getItem("user") || "{}");
     const emailDosen = user.email;
+    const isAdmin = ADMIN_EMAILS.includes(user?.email);
 
     if (!tbody) return;
 
@@ -36,7 +37,7 @@ async function refreshPendaftar() {
             mk.emailDosen1 === emailDosen || 
             mk.emailDosen2 === emailDosen || 
             mk.emailDosen3 === emailDosen ||
-            emailDosen === "calvin.wijaya@mail.ugm.ac.id" // Akses Admin
+            isAdmin
         );
 
         if (myMK.length === 0) {

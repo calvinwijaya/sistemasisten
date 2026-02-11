@@ -141,7 +141,6 @@
     <script>
         const user = JSON.parse(sessionStorage.getItem("user"));
         const role = sessionStorage.getItem("role");
-        const ADMIN_EMAIL = "calvin.wijaya@mail.ugm.ac.id";
 
         if (!user) {
             window.location.href = 'index.html';
@@ -177,7 +176,7 @@
         document.addEventListener("DOMContentLoaded", () => {
             const role = sessionStorage.getItem("role");
             const user = JSON.parse(sessionStorage.getItem("user"));
-            const isAdmin = user?.email === "calvin.wijaya@mail.ugm.ac.id";
+            const isAdmin = ADMIN_EMAILS.includes(user?.email);
 
             if (role === "dosen" || isAdmin) {
                 const dosenMenu = document.getElementById("dosenMenu");

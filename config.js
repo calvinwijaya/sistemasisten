@@ -1,5 +1,5 @@
 const ADMIN_EMAILS = [
-    "calvin.wijaya@ugm.ac.id",
+    "calvin.wijaya@mail.ugm.ac.id",
     "cecep.pratama@ugm.ac.id"
 ];
 

@@ -22,6 +22,15 @@ async function initAsistensi() {
         const allLogs = await resLog.json();
         const allMKMaster = await resMK.json();
 
+        // --- LOGIKA PENGURUTAN TANGGAL ---
+        allLogs.sort((a, b) => {
+            // Fungsi pembantu untuk mengubah "12 Februari 2026" menjadi objek Date
+            const dateA = convertIndoDateToObj(a.tanggal);
+            const dateB = convertIndoDateToObj(b.tanggal);
+            return dateA - dateB; // Urutan menaik (terlama ke terbaru)
+            // Jika ingin terbaru di atas, gunakan: return dateB - dateA;
+        });
+
         // Filter: Hanya ambil pendaftaran milik user ini yang statusnya 'Diterima'
         const dataDiterimaRaw = allDaftar.filter(item => 
             item.email === user.email && item.status === "Diterima"
@@ -172,7 +181,8 @@ async function toggleLogbook(kodeMK, kelas, index) {
         const res = await fetch(ENDPOINT_LOGBOOK);
         const allLogs = await res.json();
         const user = JSON.parse(sessionStorage.getItem("user") || "{}");
-        
+
+        allLogs.sort((a, b) => convertIndoDateToObj(a.tanggal) - convertIndoDateToObj(b.tanggal));
         const myLogs = allLogs.filter(l => l.kodeMK === kodeMK && l.kelas === kelas && l.email === user.email);
 
         if (myLogs.length === 0) {
@@ -384,7 +394,7 @@ async function generateWord(kodeMK, kelas, dataMK) {
             l.kodeMK === kodeMK && 
             l.kelas === kelas && 
             l.email === user.email
-        );
+        ).sort((a, b) => convertIndoDateToObj(a.tanggal) - convertIndoDateToObj(b.tanggal));
 
         if (myLogs.length === 0) {
             Swal.fire("Data Kosong", "Belum ada catatan logbook untuk digenerate.", "warning");
@@ -453,4 +463,18 @@ async function generateWord(kodeMK, kelas, dataMK) {
         console.error(error);
         Swal.fire("Error", "Gagal mengenerate laporan semester.", "error");
     }
+}
+
+// Fungsi Helper untuk membandingkan tanggal format Indonesia
+function convertIndoDateToObj(dateStr) {
+    if (!dateStr) return new Date(0);
+    const parts = dateStr.split(" "); // ["12", "Februari", "2026"]
+    const day = parseInt(parts[0]);
+    const year = parseInt(parts[2]);
+    const months = {
+        "Januari": 0, "Februari": 1, "Maret": 2, "April": 3, "Mei": 4, "Juni": 5,
+        "Juli": 6, "Agustus": 7, "September": 8, "Oktober": 9, "November": 10, "Desember": 11
+    };
+    const month = months[parts[1]];
+    return new Date(year, month, day);
 }

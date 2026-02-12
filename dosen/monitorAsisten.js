@@ -104,7 +104,7 @@ async function lihatLogbook(email, kodeMK, kelas) {
     try {
         const res = await fetch(ENDPOINT_LOGBOOK);
         const allLogs = await res.json();
-        const filteredLogs = allLogs.filter(l => l.email === email && l.kodeMK === kodeMK && l.kelas === kelas);
+        const filteredLogs = allLogs.filter(l => l.email === email && l.kodeMK === kodeMK && l.kelas === kelas).sort((a, b) => convertIndoDateToObj(a.tanggal) - convertIndoDateToObj(b.tanggal));
 
         if (filteredLogs.length === 0) {
             tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">Belum ada catatan logbook.</td></tr>';
@@ -248,4 +248,17 @@ function filterMKMonitor() {
             card.style.display = "none"; // Sembunyikan
         }
     });
+}
+
+function convertIndoDateToObj(dateStr) {
+    if (!dateStr) return new Date(0);
+    const parts = dateStr.split(" "); // Contoh: ["12", "Februari", "2026"]
+    const day = parseInt(parts[0]);
+    const year = parseInt(parts[2]);
+    const months = {
+        "Januari": 0, "Februari": 1, "Maret": 2, "April": 3, "Mei": 4, "Juni": 5,
+        "Juli": 6, "Agustus": 7, "September": 8, "Oktober": 9, "November": 10, "Desember": 11
+    };
+    const month = months[parts[1]];
+    return new Date(year, month, day);
 }

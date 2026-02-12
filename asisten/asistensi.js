@@ -109,7 +109,7 @@ function renderTabelAsistensi(data, allLogs) {
                                             </button>
                                             <button class="btn btn-outline-primary" 
                                                 onclick="generateWord('${item.kodeMK}', '${item.kelas}', ${JSON.stringify(item).replace(/"/g, '&quot;')})" 
-                                                title="Generate Word">
+                                                title="Generate Laporan">
                                                 <i class="bi bi-file-earmark-word"></i>
                                             </button>
                                         </div>
@@ -273,10 +273,13 @@ function setupLogbookForm() {
         const mkRaw = document.getElementById('logDataMK').value;
         const mk = JSON.parse(mkRaw);
         const logId = document.getElementById('logId').value;
-        const tglInput = document.getElementById('logTanggal').value;
+        const tglInput = document.getElementById('logTanggal').value;        
+        const parts = tglInput.split("-");
+        const y = parts[0];
+        const m = parseInt(parts[1]) - 1;
+        const d = parseInt(parts[2]);
         const daftarBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-        const dateObj = new Date(tglInput);
-        const tglIndo = `${dateObj.getDate()} ${daftarBulan[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
+        const tglIndo = `${d} ${daftarBulan[m]} ${y}`;
 
         btn.disabled = true;
         btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Memproses...`;
@@ -382,8 +385,7 @@ function formatToInputDate(dateStr) {
 
 async function generateWord(kodeMK, kelas, dataMK) {
     const user = JSON.parse(sessionStorage.getItem("user") || "{}");
-    
-    Swal.fire({ title: 'Menyiapkan Laporan Satu Semester...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    Swal.fire({ title: 'Menyiapkan Preview...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
     try {
         const res = await fetch(ENDPOINT_LOGBOOK);
@@ -401,7 +403,73 @@ async function generateWord(kodeMK, kelas, dataMK) {
             return;
         }
 
-        // 2. Grouping Data berdasarkan Bulan
+        // 2. Siapkan Daftar Dosen yang ada di MK ini
+        const listDosenMK = [];
+        if (dataMK.dosen1 && dataMK.dosen1 !== "-") listDosenMK.push(dataMK.dosen1);
+        if (dataMK.dosen2 && dataMK.dosen2 !== "-") listDosenMK.push(dataMK.dosen2);
+        if (dataMK.dosen3 && dataMK.dosen3 !== "-") listDosenMK.push(dataMK.dosen3);
+
+        // 3. Render ke Modal Review
+        const tbody = document.getElementById("bodyReviewLog");
+        const totalLogs = myLogs.length;
+        const totalDosen = listDosenMK.length;
+
+        tbody.innerHTML = myLogs.map((l, index) => {
+            // Logika Pembagian Otomatis:
+            // Tentukan dosen ke berapa berdasarkan index baris
+            // Misal 14 baris, 2 dosen -> baris 0-6 Dosen1, baris 7-13 Dosen2
+            const threshold = Math.ceil(totalLogs / totalDosen);
+            const autoDosenIndex = Math.floor(index / threshold);
+            const selectedDosen = listDosenMK[autoDosenIndex] || listDosenMK[0];
+
+            return `
+                <tr class="row-review-log" data-log-id="${l.logId}">
+                    <td>${l.tanggal}</td>
+                    <td class="text-center">${l.mingguKe}</td>
+                    <td class="small text-truncate" style="max-width: 250px;">${l.materi}</td>
+                    <td>
+                        <select class="form-select form-select-sm select-ttd-dosen">
+                            ${listDosenMK.map(dsn => `
+                                <option value="${getNamaDosen(dsn)}" ${dsn === selectedDosen ? 'selected' : ''}>
+                                    ${getNamaDosen(dsn)}
+                                </option>
+                            `).join('')}
+                        </select>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        Swal.close();
+        const modalReview = new bootstrap.Modal(document.getElementById('modalReviewGenerate'));
+        modalReview.show();
+
+        // 4. Handle Download Final
+        document.getElementById('btnFinalDownload').onclick = () => {
+            modalReview.hide();
+            eksekusiGenerateWord(myLogs, dataMK, user);
+        };
+
+    } catch (error) {
+        console.error(error);
+        Swal.fire("Error", "Gagal menyiapkan preview.", "error");
+    }
+}
+
+// Fungsi Internal untuk Proses Akhir ke Docxtemplater
+async function eksekusiGenerateWord(myLogs, dataMK, user) {
+    Swal.fire({ title: 'Mengunduh Laporan...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    
+    // Ambil data TTD dari select yang dipilih user di modal
+    const rowElements = document.querySelectorAll(".row-review-log");
+    const mapTTD = {};
+    rowElements.forEach(row => {
+        const id = row.getAttribute("data-log-id");
+        const val = row.querySelector(".select-ttd-dosen").value;
+        mapTTD[id] = val;
+    });
+
+    try {        
         // Kita buat urutan bulan agar laporan berurutan (Jan-Jun atau Agst-Jan)
         const urutanBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
         
@@ -415,8 +483,15 @@ async function generateWord(kodeMK, kelas, dataMK) {
         const sksValue = myLogs.length > 0 ? myLogs[0].sks : "-";
 
         const perBulan = bulanTersedia.map(namaBulan => {
+            const logsBulanIni = myLogs.filter(l => l.bulan === namaBulan);
+            
+            // AMBIL TTD DOSEN DARI LOG TERAKHIR DI BULAN TERSEBUT
+            // Karena dosen yang TTD biasanya satu orang per laporan bulanan
+            const logTerakhir = logsBulanIni[logsBulanIni.length - 1];
+            const namaDosenTTD = mapTTD[logTerakhir.logId];
             return {
                 Bulan: namaBulan,
+                DosenTTD: namaDosenTTD,
                 // Ambil tahun dari salah satu entri di bulan tersebut
                 Tahun: myLogs.find(l => l.bulan === namaBulan).tanggal.split(" ")[2],
                 logs: myLogs.filter(l => l.bulan === namaBulan).map(l => ({
@@ -467,7 +542,7 @@ async function generateWord(kodeMK, kelas, dataMK) {
 
 // Fungsi Helper untuk membandingkan tanggal format Indonesia
 function convertIndoDateToObj(dateStr) {
-    if (!dateStr) return new Date(0);
+    if (!dateStr || typeof dateStr !== 'string' || !dateStr.includes(" ")) return new Date(0);
     const parts = dateStr.split(" "); // ["12", "Februari", "2026"]
     const day = parseInt(parts[0]);
     const year = parseInt(parts[2]);

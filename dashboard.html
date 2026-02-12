@@ -153,7 +153,7 @@
             const menuDosen = document.getElementById("menuDosen");
             const menuAsisten = document.getElementById("menuAsisten");
 
-            if (user.email === ADMIN_EMAIL) {
+            if (ADMIN_EMAILS.includes(user.email.toLowerCase())) {
                 return;
             }
 

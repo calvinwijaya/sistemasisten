@@ -124,3 +124,54 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="modalReviewGenerateThl" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title"><i class="bi bi-file-earmark-check me-2"></i>Preview Laporan Bulanan THL</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 text-primary fw-bold" id="previewTitleThl">Laporan Bulan...</h5>
+                    <div class="d-flex align-items-center bg-light p-1 px-2 rounded border" style="font-size: 0.8rem;">
+                        <i class="bi bi-funnel fs-6 me-2 text-primary"></i>
+                        <label class="me-2 fw-bold text-secondary mb-0">Pilih Bulan:</label>
+                        <select class="form-select form-select-sm border-0 bg-transparent py-0" id="filterBulanGenerate" style="width: 130px; font-size: 0.75rem;">
+                            </select>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle border" style="font-size: 0.8rem;">
+                        <thead class="table-light text-uppercase">
+                            <tr>
+                                <th width="10%">Hari</th>
+                                <th width="10%">Tanggal</th>
+                                <th width="15%">Jam</th>
+                                <th>Pekerjaan / Aktivitas</th>
+                                <th width="10%" class="text-center">Durasi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyPreviewLogThl">
+                            </tbody>
+                        <tfoot class="table-light fw-bold">
+                            <tr>
+                                <td colspan="3" class="text-end">TOTAL:</td>
+                                <td colspan="2" class="text-center text-primary" id="totalSummaryThl" style="white-space: nowrap; min-width: 200px;">
+                                    0 Hari | 0 Jam</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" id="btnFinalDownloadThl" class="btn btn-success">
+                    <i class="bi bi-file-earmark-word me-1"></i> Unduh Laporan (.docx)
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

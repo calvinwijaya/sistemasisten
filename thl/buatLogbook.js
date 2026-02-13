@@ -1,5 +1,7 @@
 // Variabel global untuk menyimpan data pekerjaan yang sedang aktif di modal
 let activeWorkData = null;
+let currentPreviewLogs = [];
+let currentPreviewWorkName = "";
 
 function initBuatLogbook() {
     const user = JSON.parse(sessionStorage.getItem("user"));
@@ -39,6 +41,9 @@ function renderWorkTable(dataKebutuhan, dataTerpilih, userEmail) {
         return;
     }
 
+    const currentMonth = new Date().toLocaleString('id-ID', { month: 'long' });
+    const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
     let html = "";
     myWorks.forEach((work, index) => {
         const tahun = work[1];
@@ -75,8 +80,15 @@ function renderWorkTable(dataKebutuhan, dataTerpilih, userEmail) {
                             </td>
                         </tr>
                         <tr>
-                            <td colspan="4" class="p-3 bg-light">
-                                <div class="table-responsive bg-white rounded shadow-sm">
+                            <td colspan="4" class="p-3 bg-light text-end">
+                                <div class="d-inline-flex align-items-center mb-2 bg-white p-1 px-2 rounded border shadow-sm" style="font-size: 0.8rem;">
+                                    <i class="bi bi-funnel fs-6 me-2 text-primary"></i> <label class="me-2 fw-bold text-secondary mb-0">Bulan:</label>
+                                    <select class="form-select form-select-sm border-0 bg-light py-0" id="filterBulan-${workId}" onchange="loadHistory('${namaPekerjaan}', '${workId}')" style="width: 120px; font-size: 0.75rem; cursor: pointer;">
+                                        ${months.map(m => `<option value="${m}" ${m === currentMonth ? 'selected' : ''}>${m}</option>`).join('')}
+                                    </select>
+                                </div>
+
+                                <div class="table-responsive bg-white rounded shadow-sm text-start">
                                     <table class="table table-sm table-hover mb-0" style="font-size: 0.85rem;">
                                         <thead class="bg-primary text-white text-uppercase" style="font-size: 0.75rem;">
                                             <tr>
@@ -145,12 +157,15 @@ function setupModalInputs() {
     // Logika menyembunyikan jam pulang yang lebih kecil dari jam masuk
     jamMasuk.addEventListener("change", function() {
         const selectedJamMasuk = parseInt(this.value);
+        const minJamPulang = selectedJamMasuk + 1;
         let html = "";
-        for (let i = selectedJamMasuk; i <= 19; i++) {
+
+        for (let i = minJamPulang; i <= 19; i++) {
             let h = i.toString().padStart(2, '0');
             html += `<option value="${h}">${h}</option>`;
         }
         jamPulang.innerHTML = html;
+        jamPulang.value = minJamPulang.toString().padStart(2, '0');
     });
 
     document.getElementById("logThlTanggal").addEventListener("change", function() {
@@ -271,16 +286,28 @@ document.getElementById("formLogbookThl").addEventListener("submit", function(e)
 function loadHistory(namaPekerjaan, workId) {
     const user = JSON.parse(sessionStorage.getItem("user"));
     const tbody = document.getElementById(`history-${workId}`);
+    const filterBulan = document.getElementById(`filterBulan-${workId}`).value;
 
     if (!tbody) return;
+
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary"></div></td></tr>`;
 
     fetch(`${ENDPOINT_THL_LOGBOOK}?action=getLogbook&email=${user.email}`)
         .then(res => res.json())
         .then(res => {
             if (res.status === "ok") {
-                const filteredData = res.data.filter(row => row[3] === namaPekerjaan);
+                let filteredData = res.data.filter(row => {
+                    const matchPekerjaan = row[3] === namaPekerjaan;
+                    const matchBulan = row[12] === filterBulan; 
+                    return matchPekerjaan && matchBulan;
+                });
+                filteredData = sortLogsByDate(filteredData, 14);
                 renderHistoryRows(filteredData, tbody);
             }
+        })
+        .catch(err => {
+            console.error(err);
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-3">Gagal memuat data.</td></tr>`;
         });
 }
 
@@ -292,15 +319,7 @@ function renderHistoryRows(data, tbody) {
 
     let html = "";
     data.forEach((row) => {
-        const fixTimeFormat = (val) => {
-            if (!val) return "00:00";
-            let s = val.toString();
-            // Jika format ISO (1899-12-30T07:15:00.000Z)
-            if (s.includes('T')) return s.split('T')[1].substring(0, 5);
-            // Jika format waktu (07:15:00)
-            if (s.includes(':')) return s.substring(0, 5);
-            return s;
-        };
+        const fixTimeFormat = (val) => val || "00:00";
 
         const jamM = fixTimeFormat(row[15]);
         const jamP = fixTimeFormat(row[16]);
@@ -317,7 +336,7 @@ function renderHistoryRows(data, tbody) {
                     </button>
                 </div>
             </td>
-            <td class="fw-semibold">${row[14]}</td>
+            <td class="fw-semibold">${formatTanggalDisplay(row[14])}</td>
             <td class="text-uppercase text-secondary" style="font-size: 0.7rem;">${row[13]}</td>
             <td><span class="badge bg-light text-dark border fw-normal">${jamM} - ${jamP}</span></td>
             <td class="text-wrap">${row[19]}</td>
@@ -419,4 +438,171 @@ function openEditModal(rowData) {
     };
 
     new bootstrap.Modal(document.getElementById('modalLogbookThl')).show();
+}
+
+function formatTanggalDisplay(val) {
+    if (!val) return "-";
+    let d = new Date(val);
+    const options = { 
+        timeZone: 'Asia/Jakarta',
+        day: '2-digit', 
+        month: 'long', 
+        year: 'numeric' 
+    };
+
+    return d.toLocaleDateString('id-ID', options);
+}
+
+async function openGenerateModal(namaPekerjaan) {
+    currentPreviewWorkName = namaPekerjaan;
+    const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+    const currentMonth = new Date().toLocaleString('id-ID', { month: 'long' });
+    const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+    // Setup Dropdown Bulan di Modal
+    const selectBulan = document.getElementById("filterBulanGenerate");
+    selectBulan.innerHTML = months.map(m => `<option value="${m}" ${m === currentMonth ? 'selected' : ''}>${m}</option>`).join('');
+    
+    // Listener untuk ganti preview saat bulan diubah
+    selectBulan.onchange = () => refreshPreviewGenerate();
+
+    refreshPreviewGenerate();
+
+    const modal = new bootstrap.Modal(document.getElementById('modalReviewGenerateThl'));
+    modal.show();
+
+    // Handle Download
+    document.getElementById('btnFinalDownloadThl').onclick = () => {
+        modal.hide();
+        eksekusiGenerateWordThl();
+    };
+}
+
+async function refreshPreviewGenerate() {
+    const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+    const selectedBulan = document.getElementById("filterBulanGenerate").value;
+    const tbody = document.getElementById("bodyPreviewLogThl");
+    
+    document.getElementById("previewTitleThl").textContent = `Laporan ${currentPreviewWorkName} - ${selectedBulan}`;
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary"></div> Memuat data...</td></tr>`;
+
+    try {
+        const res = await fetch(`${ENDPOINT_THL_LOGBOOK}?action=getLogbook&email=${user.email}`);
+        const result = await res.json();
+        
+        // Filter: Pekerjaan yang sama & Bulan yang dipilih
+        let logsBulanIni = result.data.filter(l => l[3] === currentPreviewWorkName && l[12] === selectedBulan);
+        currentPreviewLogs = sortLogsByDate(logsBulanIni, 14);
+
+        if (currentPreviewLogs.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted italic">Tidak ada data logbook untuk bulan ${selectedBulan}</td></tr>`;
+            document.getElementById("totalSummaryThl").textContent = "0 Hari | 0 Jam";
+            document.getElementById("btnFinalDownloadThl").disabled = true;
+            return;
+        }
+
+        document.getElementById("btnFinalDownloadThl").disabled = false;
+        
+        let totalJam = 0;
+        tbody.innerHTML = currentPreviewLogs.map(l => {
+            totalJam += parseFloat(l[17]);
+            return `
+                <tr>
+                    <td class="text-uppercase small">${l[13]}</td>
+                    <td>${l[14]}</td>
+                    <td>${l[15]} - ${l[16]}</td>
+                    <td class="text-wrap">${l[19]}</td>
+                    <td class="text-center fw-bold">${l[17]}</td>
+                </tr>
+            `;
+        }).join('');
+
+        const totalHari = currentPreviewLogs.length;
+        const displayTotal = `${totalHari} Hari &nbsp;|&nbsp; ${totalJam.toFixed(2)} Jam`;
+        document.getElementById("totalSummaryThl").innerHTML = displayTotal;
+
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Gagal memuat preview data.</td></tr>`;
+    }
+}
+
+async function eksekusiGenerateWordThl() {
+    const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+    const selectedBulan = document.getElementById("filterBulanGenerate").value;
+    
+    if (currentPreviewLogs.length === 0) return;
+
+    Swal.fire({ 
+        title: 'Menyusun Dokumen...', 
+        allowOutsideClick: false, 
+        didOpen: () => Swal.showLoading() 
+    });
+
+    try {
+        const resKebutuhan = await fetch(ENDPOINT_THL_KEBUTUHAN).then(r => r.json());
+        const dataKebutuhan = resKebutuhan.data.find(k => 
+            k[2] === currentPreviewWorkName && k[1] == currentPreviewLogs[0][2]
+        );
+        const nipDosen = dataKebutuhan ? dataKebutuhan[14] : "-";
+
+        const response = await fetch('template/Template_Laporan_THL.docx');
+        const content = await response.arrayBuffer();
+        const zip = new PizZip(content);
+        const doc = new window.docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+
+        const today = new Date();
+        const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        
+        let totalJam = 0;
+        const logsData = currentPreviewLogs.map((l, index) => {
+            totalJam += parseFloat(l[17]);
+            return {
+                No: index + 1,
+                Hari: l[13],
+                Tanggal: l[14].split(' ')[0], // Ambil "5" dari "5 Februari 2026"
+                JamMasuk: l[15],
+                JamPulang: l[16],
+                Jam: l[17],
+                Aktivitas: l[19]
+            };
+        });
+
+        const dataRender = {
+            NamaAsisten: user.nama,
+            NamaPekerjaan: currentPreviewWorkName,
+            Bulan: selectedBulan,
+            Tahun: currentPreviewLogs[0][2], // Kolom Tahun dari logbook
+            logs: logsData,
+            JumlahHari: currentPreviewLogs.length,
+            JumlahJam: totalJam.toFixed(2),
+            TanggalHariIni: `${today.getDate()} ${months[today.getMonth()]} ${today.getFullYear()}`,
+            Dosen1: getNamaDosen(currentPreviewLogs[0][4]), // Map kode dosen1 ke nama lengkap
+            NIP: nipDosen
+        };
+
+        doc.render(dataRender);
+        const out = doc.getZip().generate({ 
+            type: "blob", 
+            mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" 
+        });
+
+        saveAs(out, `Laporan_THL_${selectedBulan}_${user.nama}.docx`);
+        Swal.fire("Berhasil", "Laporan berhasil diunduh.", "success");
+
+    } catch (error) {
+        console.error(error);
+        Swal.fire("Error", "Gagal mengenerate laporan.", "error");
+    }
+}
+
+function sortLogsByDate(data, dateIndex) {
+    const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    
+    return data.sort((a, b) => {
+        const parse = (dateStr) => {
+            const p = dateStr.split(' '); // [10, Februari, 2026]
+            return new Date(p[2], months.indexOf(p[1]), p[0]);
+        };
+        return parse(a[dateIndex]) - parse(b[dateIndex]);
+    });
 }

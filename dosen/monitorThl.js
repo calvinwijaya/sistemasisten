@@ -170,8 +170,12 @@ function renderMonitorRows(data, tbody) {
     }
 
     let html = "";
+    let totalJam = 0;
+
     data.forEach((row) => {
         const jam = `${row[15].toString().substring(0,5)} - ${row[16].toString().substring(0,5)}`;
+        totalJam += parseFloat(row[17]) || 0;
+
         html += `
         <tr>
             <td class="fw-semibold">${row[14]}</td>
@@ -181,5 +185,13 @@ function renderMonitorRows(data, tbody) {
             <td class="text-center fw-bold text-primary">${row[17]} Jam</td>
         </tr>`;
     });
+        html += `
+        <tr class="table-light fw-bold border-top">
+            <td colspan="4" class="text-end py-2">TOTAL:</td>
+            <td class="text-center py-2 text-primary" style="white-space: nowrap;">
+                ${data.length} Hari | ${totalJam.toFixed(2)} Jam
+            </td>
+        </tr>`;
+
     tbody.innerHTML = html;
 }

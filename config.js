@@ -42,3 +42,8 @@ const ENDPOINT_PENDAFTARAN = "https://script.google.com/macros/s/AKfycbxa32wiCAX
 const ENDPOINT_TERPILIH = "https://script.google.com/macros/s/AKfycbx5F_l-w67oVhaSIWU1N23xW1hzgJFXrGhPdKDJXOKxB1dbxxgIKyklYF7TRtRBknaQrg/exec";
 const ENDPOINT_LOGBOOK = "https://script.google.com/macros/s/AKfycbxJb2Eh2HfoE9kAgZAnbNLxhGkigUVfiMsSXoDLGygQNtmYrgd3YqZd3TfS8BNwTmaqeA/exec";
 const ENDPOINT_REVIU = "https://script.google.com/macros/s/AKfycbxvELkjeRVHeAChO1drsYKe_9ViAzoBivyDtBos98RFguKFWBErL7oHsxET3xVXxaO_Wg/exec";
+
+const ENDPOINT_THL_MASTER = "https://script.google.com/macros/s/AKfycbyj__NK8OAC9VFzSFiFzCT6A6O8NIm0UCQHg1Op0IY-xTXG_gTWajzCbal4ArM_iaa3/exec";
+const ENDPOINT_THL_KEBUTUHAN = `${ENDPOINT_THL_MASTER}?action=getKebutuhan`;
+const ENDPOINT_THL_TERPILIH  = `${ENDPOINT_THL_MASTER}?action=getTerpilih`;
+const ENDPOINT_THL_LOGBOOK   = ENDPOINT_THL_MASTER;

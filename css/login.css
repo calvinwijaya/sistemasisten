@@ -114,7 +114,7 @@ h1 {
 .login-divider:not(:empty)::after { margin-left: 1em; }
 
 /* Tombol Google */
-#btn-dosen, #btn-mahasiswa {
+#btn-dosen, #btn-mahasiswa, #btn-thl {
   display: flex;
   justify-content: center;
   min-height: 40px;

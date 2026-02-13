@@ -3,7 +3,8 @@ let currentRole = "";
 // Daftar Endpoint GAS
 const ENDPOINTS = {
   dosen: "https://script.google.com/macros/s/AKfycbxYh8AO79OHElYXHClU7UyNPhMhXbr-AdFfa514M2s8YYIrrTcJO3GsFuZbnPuxOUZU/exec",
-  mahasiswa: "https://script.google.com/macros/s/AKfycbygalRAuM27-77OhOGfdFSOLCJR54sBSDBePech_5JZPFYBtUldVXHnss7VyNBuM5ZlnQ/exec"
+  mahasiswa: "https://script.google.com/macros/s/AKfycbygalRAuM27-77OhOGfdFSOLCJR54sBSDBePech_5JZPFYBtUldVXHnss7VyNBuM5ZlnQ/exec",
+  thl: "https://script.google.com/macros/s/AKfycbxjOOgHDh-5bsJmEKjv8GLjAV1aysS1t8U4Xb-A35ohrUX6kEgoo8fwXv0YHDM-l9Vgfw/exec"
 };
 
 function setRole(role) {
@@ -29,8 +30,15 @@ window.onload = function () {
     { theme: "outline", size: "large", text: "signin_with", click_listener: () => { currentRole = "mahasiswa"; } }
   );
 
+  // Render Tombol THL
+  google.accounts.id.renderButton(
+    document.getElementById("btn-thl"),
+    { theme: "outline", size: "large", text: "signin_with", click_listener: () => { currentRole = "thl"; } }
+  );
+
   document.getElementById("btn-mahasiswa").addEventListener("mousedown", () => {currentRole = "mahasiswa";});
   document.getElementById("btn-dosen").addEventListener("mousedown", () => {currentRole = "dosen";});
+  document.getElementById("btn-thl").addEventListener("mousedown", () => { currentRole = "thl"; });
 };
 
 function handleCredentialResponse(response) {

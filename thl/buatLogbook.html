@@ -168,8 +168,34 @@
             </div>
             <div class="modal-footer bg-light">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" onclick="bukaModalTTD()"><i class="bi bi-pen me-1"></i> TTD Digital</button>
                 <button type="button" id="btnFinalDownloadThl" class="btn btn-success">
                     <i class="bi bi-file-earmark-word me-1"></i> Unduh Laporan (.docx)
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalSignatureThl" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-md shadow-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Goreskan Tanda Tangan</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="border rounded bg-light mb-2">
+                    <canvas id="signature-pad-thl" style="width: 100%; height: 250px; cursor: crosshair;"></canvas>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearSignature()">
+                    <i class="bi bi-eraser me-1"></i> Hapus
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kembali</button>
+                <button type="button" class="btn btn-danger" onclick="generateLaporanPDF()">
+                    <i class="bi bi-file-pdf me-1"></i> Unduh Laporan (PDF)
                 </button>
             </div>
         </div>

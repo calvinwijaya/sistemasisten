@@ -2,6 +2,7 @@
 let activeWorkData = null;
 let currentPreviewLogs = [];
 let currentPreviewWorkName = "";
+let signaturePadThl;
 
 function initBuatLogbook() {
     const user = JSON.parse(sessionStorage.getItem("user"));
@@ -605,4 +606,175 @@ function sortLogsByDate(data, dateIndex) {
         };
         return parse(a[dateIndex]) - parse(b[dateIndex]);
     });
+}
+
+// Fungsi TTD
+// Inisialisasi saat halaman siap atau saat modal dibuka
+function bukaModalTTD() {
+    const myModal = new bootstrap.Modal(document.getElementById('modalSignatureThl'));
+    myModal.show();
+    
+    // Inisialisasi pad hanya sekali
+    setTimeout(() => {
+        const canvas = document.getElementById("signature-pad-thl");
+        // Sesuaikan resolusi canvas dengan tampilan CSS
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext("2d").scale(ratio, ratio);
+        
+        if (!signaturePadThl) {
+            signaturePadThl = new SignaturePad(canvas);
+        } else {
+            signaturePadThl.clear();
+        }
+    }, 500); // Tunggu modal terbuka sempurna
+}
+
+function clearSignature() {
+    signaturePadThl.clear();
+}
+
+async function generateLaporanPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+    const selectedBulan = document.getElementById("filterBulanGenerate").value;
+
+    if (!signaturePadThl || signaturePadThl.isEmpty()) {
+        Swal.fire("Peringatan", "Silakan tanda tangan terlebih dahulu.", "warning");
+        return;
+    }
+
+    Swal.fire({ title: 'Menyusun PDF...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+    try {
+        const resKebutuhan = await fetch(ENDPOINT_THL_KEBUTUHAN).then(r => r.json());
+        const dataKebutuhan = resKebutuhan.data.find(k => 
+            k[2] === currentPreviewWorkName && k[1] == currentPreviewLogs[0][2]
+        );
+        const nipDosen = dataKebutuhan ? dataKebutuhan[14] : "-";
+        
+        // --- 1. JUDUL (Times New Roman 14 Bold) ---
+        doc.setFont("times", "bold");
+        doc.setFontSize(14);
+        doc.text("DAFTAR HADIR TENAGA LEPAS", 105, 20, { align: "center" });
+
+        // --- 2. HEADER INFO (Times New Roman 12) ---
+        doc.setFont("times", "normal");
+        doc.setFontSize(12);
+        
+        doc.text("Nama", 20, 35);
+        doc.text(`: ${user.nama}`, 55, 35);
+        
+        doc.text("Instansi/Dept", 20, 42);
+        doc.text(": Departemen Teknik Geodesi", 55, 42);
+        
+        doc.text("Periode", 20, 49);
+        doc.text(`: ${selectedBulan} ${currentPreviewLogs[0][2]}`, 55, 49);
+
+        // --- 3. TABEL LOGBOOK ---
+        const tableBody = currentPreviewLogs.map((l, index) => [
+            index + 1,
+            l[13], // Hari
+            l[14].split(' ')[0], // Tanggal
+            l[15], // Jam Masuk
+            l[16], // Jam Pulang
+            l[17], // Jumlah Jam
+            "1",   // Jumlah Hari
+            "",    // Kolom TTD (Kosongkan karena akan digambar manual)
+            l[19]  // Ket (Aktivitas)
+        ]);
+
+        // Hitung total untuk footer tabel
+        let totalJam = 0;
+        currentPreviewLogs.forEach(l => totalJam += parseFloat(l[17]));
+
+        doc.autoTable({
+            startY: 55,
+            margin: { left: 20, right: 20 },
+            head: [['No', 'Hari', 'Tanggal', 'Jam Masuk', 'Jam Pulang', 'Jumlah Jam', 'Jumlah Hari', 'Tanda Tangan', 'Ket.']],
+            body: tableBody,
+            theme: 'grid',
+            headStyles: { 
+                fillColor: [255, 255, 255], 
+                textColor: [0, 0, 0], 
+                lineColor: [0, 0, 0], 
+                lineWidth: 0.2,
+                font: "times",
+                fontStyle: 'bold',
+                halign: 'center' 
+            },
+            styles: { 
+                font: "times", 
+                fontSize: 10, // Dikecilkan sedikit agar muat banyak kolom
+                textColor: [0, 0, 0],
+                lineColor: [0, 0, 0],
+                lineWidth: 0.2
+            },
+            columnStyles: {
+                0: { halign: 'center', cellWidth: 10 },
+                1: { halign: 'center' },
+                2: { halign: 'center' },
+                3: { halign: 'center' },
+                4: { halign: 'center' },
+                5: { halign: 'center' },
+                6: { halign: 'center' },
+                7: { cellWidth: 25 }, // Kolom TTD
+                8: { cellWidth: 35 }  // Kolom Ket
+            },
+            // Draw TTD kecil di setiap baris (Opsional berdasarkan template Anda)
+            didDrawCell: function(data) {
+                if (data.column.index === 7 && data.cell.section === 'body') {
+                    const ttdImg = signaturePadThl.toDataURL("image/png");
+                    doc.addImage(ttdImg, 'PNG', data.cell.x + 2, data.cell.y + 1, 26, 10);
+                }
+            },
+            foot: [[
+                { content: 'JUMLAH', colSpan: 5, styles: { halign: 'center', fontStyle: 'bold' } },
+                { content: totalJam.toFixed(2), styles: { halign: 'center', fontStyle: 'bold' } },
+                { content: currentPreviewLogs.length, styles: { halign: 'center', fontStyle: 'bold' } },
+                { content: '', colSpan: 2 }
+            ]],
+            footStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], lineColor: [0, 0, 0], lineWidth: 0.2 }
+        });
+
+        // --- 4. TANDA TANGAN BAWAH ---
+        let finalY = doc.lastAutoTable.finalY + 15;
+        if (finalY > 220) { doc.addPage(); finalY = 30; }
+
+        const today = new Date();
+        const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        const tglHariIni = `${today.getDate()} ${months[today.getMonth()]} ${today.getFullYear()}`;
+
+        // Mengambil data NIP & Dosen dari log pertama
+        const namaDosen = getNamaDosen(currentPreviewLogs[0][4]);
+
+        doc.setFont("times", "normal");
+        doc.setFontSize(12);
+
+        // Bagian Mengetahui (Kiri)
+        doc.text("Mengetahui,", 20, finalY);
+        doc.text(`Ketua Tim ${currentPreviewWorkName}`, 20, finalY + 6);
+        doc.text(`${namaDosen}`, 20, finalY + 40);
+        doc.text(`NIP. ${nipDosen}`, 20, finalY + 46);
+
+        // Bagian Pembuat Daftar (Kanan)
+        doc.text(`Yogyakarta, ${tglHariIni}`, 130, finalY);
+        doc.text("Pembuat Daftar", 130, finalY + 6);
+
+        // Gambar TTD Utama
+        const ttdImgBesar = signaturePadThl.toDataURL("image/png");
+        doc.addImage(ttdImgBesar, 'PNG', 130, finalY + 10, 45, 22);
+
+        doc.text(`${user.nama}`, 130, finalY + 40);
+
+        // --- 5. DOWNLOAD ---
+        doc.save(`Daftar_Hadir_THL_${selectedBulan}_${user.nama}.pdf`);
+        Swal.fire("Berhasil", "Laporan PDF berhasil diunduh.", "success");
+
+    } catch (error) {
+        console.error(error);
+        Swal.fire("Error", "Gagal: " + error.message, "error");
+    }
 }

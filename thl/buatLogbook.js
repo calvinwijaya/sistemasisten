@@ -727,7 +727,14 @@ async function generateLaporanPDF() {
             didDrawCell: function(data) {
                 if (data.column.index === 7 && data.cell.section === 'body') {
                     const ttdImg = signaturePadThl.toDataURL("image/png");
-                    doc.addImage(ttdImg, 'PNG', data.cell.x + 2, data.cell.y + 1, 26, 10);
+                    const imgW = 20; 
+                    const imgH = 8;
+                    
+                    // Kalkulasi Center di dalam sel
+                    const centerX = data.cell.x + (data.cell.width / 2) - (imgW / 2);
+                    const centerY = data.cell.y + (data.cell.height / 2) - (imgH / 2);
+                    
+                    doc.addImage(ttdImg, 'PNG', centerX, centerY, imgW, imgH);
                 }
             },
             foot: [[
@@ -765,9 +772,8 @@ async function generateLaporanPDF() {
 
         // Gambar TTD Utama
         const ttdImgBesar = signaturePadThl.toDataURL("image/png");
-        doc.addImage(ttdImgBesar, 'PNG', 130, finalY + 10, 45, 22);
-
-        doc.text(`${user.nama}`, 130, finalY + 40);
+        doc.addImage(ttdImgBesar, 'PNG', 125, finalY + 10, 60, 30);
+        doc.text(`${user.nama}`, 130, finalY + 45);
 
         // --- 5. DOWNLOAD ---
         doc.save(`Daftar_Hadir_THL_${selectedBulan}_${user.nama}.pdf`);

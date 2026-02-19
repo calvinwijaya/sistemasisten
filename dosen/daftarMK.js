@@ -87,6 +87,7 @@ function setupFormListener() {
 
         const payload = {
             action: "tambahMK",
+            semester: "Genap 25/26",
             kodeMK: document.getElementById('formKodeMK').value,
             namaMK: document.getElementById('formNamaMK').value,
             kelas: document.getElementById('formKelas').value,

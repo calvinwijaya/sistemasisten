@@ -4,6 +4,8 @@ let currentNamaPanggilan = "";
 let rawTrackerData = [];
 let chartTargetInstance = null;
 let chartJenisInstance = null;
+let chartSosmedInstance = null;
+let filterState = { dosenPesanan: false, dosenQC: false, thlDesain: false, thlCopy: false };
 
 async function initTrackerMedia() {
     const user = JSON.parse(sessionStorage.getItem("user") || "{}");
@@ -39,6 +41,18 @@ async function initTrackerMedia() {
             const badge = document.getElementById("badgeNotifMedia");
             if(badge) badge.style.display = "none";
         });
+    }
+
+    // Inisialisasi Tombol Filter berdasarkan Role
+    const filterArea = document.getElementById("filterRoleArea");
+    if (currentRole === "dosen") {
+        filterArea.innerHTML = `
+            <button class="btn btn-sm btn-outline-primary" id="btnFiltDosenPesanan" onclick="toggleFilter('dosenPesanan')">Pesanan Saya</button>
+            <button class="btn btn-sm btn-outline-warning text-dark" id="btnFiltDosenQC" onclick="toggleFilter('dosenQC')">Perlu QC Saya</button>`;
+    } else if (currentRole === "thl") {
+        filterArea.innerHTML = `
+            <button class="btn btn-sm btn-outline-info text-dark" id="btnFiltThlDesain" onclick="toggleFilter('thlDesain')">Desain Saya</button>
+            <button class="btn btn-sm btn-outline-success" id="btnFiltThlCopy" onclick="toggleFilter('thlCopy')">Copywriting Saya</button>`;
     }
 
     fetchTrackerData(true);
@@ -105,26 +119,62 @@ function fetchTrackerData(showLoading = false) {
 function renderSemuaUI() {
     const filterBulan = document.getElementById("filterBulanMedia").value;
     const filterTahun = document.getElementById("filterTahunMedia").value;
-    const sortBy = document.getElementById("sortMedia").value;
+    const searchJudul = document.getElementById("searchJudulMedia").value.toLowerCase();
+    const sortBy = document.getElementById("sortMedia").value; // Ambil nilai dropdown sort
+    
+    const myKode = getKodeDosenByNama(JSON.parse(sessionStorage.getItem("user")).nama);
 
     let filteredData = rawTrackerData.filter(r => {
-        if (filterBulan === "Semua") return r.tanggal.includes(filterTahun);
-        let parts = r.tanggal.split("/");
-        if (parts.length === 3) {
-            const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-            return months[parseInt(parts[1]) - 1] === filterBulan && parts[2] == filterTahun;
+        // 1. Filter Bulan & Tahun
+        let dateMatch = false;
+        if (filterBulan === "Semua") {
+            dateMatch = r.tanggal.includes(filterTahun);
+        } else {
+            let parts = r.tanggal.split("/");
+            if (parts.length === 3) {
+                const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+                dateMatch = months[parseInt(parts[1]) - 1] === filterBulan && parts[2] == filterTahun;
+            }
         }
-        return false; 
+        if (!dateMatch) return false;
+
+        // 2. Filter Pencarian Judul
+        if (searchJudul && !r.judul.toLowerCase().includes(searchJudul)) return false;
+
+        // 3. Filter Tombol State
+        if (currentRole === "dosen") {
+            if (filterState.dosenPesanan && filterState.dosenQC) {
+                return r.pemberiOrder === myKode || r.reviewer === myKode;
+            } else if (filterState.dosenPesanan) {
+                return r.pemberiOrder === myKode;
+            } else if (filterState.dosenQC) {
+                return r.reviewer === myKode;
+            }
+        } else if (currentRole === "thl") {
+            if (filterState.thlDesain && filterState.thlCopy) {
+                return (r.desainer && r.desainer.includes(currentNamaPanggilan)) || (r.copywriter && r.copywriter.includes(currentNamaPanggilan));
+            } else if (filterState.thlDesain) {
+                return r.desainer && r.desainer.includes(currentNamaPanggilan);
+            } else if (filterState.thlCopy) {
+                return r.copywriter && r.copywriter.includes(currentNamaPanggilan);
+            }
+        }
+        
+        return true; // Jika tidak ada filter khusus yang menyala
     });
 
+    // Urutkan default by Tanggal Order terbaru (ID)
     filteredData.sort((a, b) => {
-        const parseDate = (str) => {
-            if (!str) return new Date(0);
-            let p = str.split("/");
-            if (p.length === 3) return new Date(p[2], p[1]-1, p[0]); 
-            return new Date(str);
-        };
-        return parseDate(sortBy === 'jadwalPub' && a.jadwalPublikasi ? a.jadwalPublikasi : a.tanggal) - parseDate(sortBy === 'jadwalPub' && b.jadwalPublikasi ? b.jadwalPublikasi : b.tanggal);
+        if (sortBy === 'tglOrderDesc') {
+            return b.rowIdx - a.rowIdx; // Terbaru (baris terbawah di Sheet) ke Teratas
+        } else if (sortBy === 'tglOrderAsc') {
+            return a.rowIdx - b.rowIdx; // Terlama (baris teratas di Sheet) ke Terbawah
+        } else if (sortBy === 'judulAsc') {
+            return a.judul.localeCompare(b.judul); // Judul A - Z
+        } else if (sortBy === 'judulDesc') {
+            return b.judul.localeCompare(a.judul); // Judul Z - A
+        }
+        return 0;
     });
 
     const activeData = filteredData.filter(r => r.status !== "Published");
@@ -137,8 +187,17 @@ function renderSemuaUI() {
 
 function renderTrackerTable(data) {
     const container = document.getElementById("trackerMediaContent");
+    
+    // Pesan Kosong Custom berdasarkan Filter
     if (data.length === 0) {
-        container.innerHTML = `<div class="alert alert-warning text-center">Belum ada pesanan desain aktif.</div>`;
+        let msg = "Belum ada pesanan desain aktif.";
+        if(filterState.dosenPesanan && filterState.dosenQC) msg = "Belum ada pesanan yang Anda buat dan desain yang perlu Anda QC.";
+        else if(filterState.dosenPesanan) msg = "Belum ada pesanan yang Anda buat.";
+        else if(filterState.dosenQC) msg = "Belum ada desain yang perlu Anda QC.";
+        else if(filterState.thlDesain) msg = "Belum ada desain yang Anda kerjakan.";
+        else if(filterState.thlCopy) msg = "Belum ada copywriting yang Anda kerjakan.";
+        
+        container.innerHTML = `<div class="alert alert-warning text-center">${msg}</div>`;
         return;
     }
 
@@ -151,13 +210,20 @@ function renderTrackerTable(data) {
                     <th width="15%" class="text-start">JENIS KONTEN</th>
                     <th width="20%" class="text-start">JUDUL KONTEN</th>
                     <th width="15%">LINK DESAIN</th>
-                    <th width="15%">JADWAL PUBLIKASI</th> 
+                    <th width="15%">PLATFORM SOSMED</th> 
                     <th width="30%" class="text-start">STATUS & TRACKER</th>
                 </tr>
             </thead>
             <tbody>`;
 
     data.forEach((row, index) => {
+        // Render Badge Sosmed Berwarna
+        let sosmedHtml = '-';
+        if (row.medsos) {
+            const smColors = {"IG": "bg-danger", "YT": "bg-danger", "FB": "bg-primary", "Tiktok": "bg-dark", "Website": "bg-info text-dark", "Cetak": "bg-secondary", "E-Mail": "bg-warning text-dark"};
+            sosmedHtml = row.medsos.split(", ").map(s => `<span class="badge ${smColors[s] || 'bg-secondary'} me-1 mb-1">${s}</span>`).join('');
+        }
+
         html += `
         <tr>
             <td class="text-center fw-bold">${index + 1}</td>
@@ -166,9 +232,7 @@ function renderTrackerTable(data) {
             <td class="text-center">
                 ${row.linkDesain ? `<a href="${row.linkDesain}" target="_blank" class="btn btn-sm btn-outline-info"><i class="bi bi-link-45deg"></i> Link</a>` : '-'}
             </td>
-            <td class="text-center fw-bold text-success">
-                ${row.jadwalPublikasi ? row.jadwalPublikasi : '<span class="text-muted small">-</span>'}
-            </td>
+            <td class="text-center">${sosmedHtml}</td>
             <td class="py-3">
                 ${generateAksiStatus(row)}
                 ${generateStepper(row)}
@@ -182,7 +246,13 @@ function renderTrackerTable(data) {
 
 // 2. FUNGSI AKSI: Tambah tombol Mata (Detail) dan Teks Desainer
 function generateAksiStatus(row) {
-    let badge = `<span class="badge bg-dark mb-2">${row.status}</span>`;
+    // Memberikan warna badge otomatis agar lebih intuitif
+    let badgeColor = "bg-dark";
+    if (row.status.includes("Revisi")) badgeColor = "bg-danger";
+    else if (row.status === "QC") badgeColor = "bg-warning text-dark";
+    else if (row.status === "Published") badgeColor = "bg-success";
+    
+    let badge = `<span class="badge ${badgeColor} mb-2">${row.status}</span>`;
     let aksiHtml = "";
     
     let btnMata = `<button class="btn btn-sm btn-outline-secondary me-1" title="Lihat Arahan" onclick="bukaModalDetail('${row.orderId}')"><i class="bi bi-info-circle"></i></button>`;
@@ -194,39 +264,35 @@ function generateAksiStatus(row) {
     }
 
     if (currentRole === "thl") {
-        // TAHAP DESAIN
         if (row.status === "Request") {
             aksiHtml = `<button class="btn btn-sm btn-primary" onclick="terimaTugas('${row.orderId}', 'Desainer')">Terima Desain</button>`;
         } 
-        else if (row.status === "On Process" || row.status === "Revision") {
+        // 1. TAHAP DESAIN (Termasuk Revisi Desain & Revisi Keduanya)
+        else if (row.status === "On Process" || row.status === "Revisi Desain" || row.status === "Revision") {
             if (row.desainer && row.desainer.includes(currentNamaPanggilan)) {
                 aksiHtml = `<button class="btn btn-sm btn-info" onclick="bukaModalDraft('${row.orderId}')">Unggah Desain</button>`;
             } else {
                 aksiHtml = `<button class="btn btn-sm btn-outline-primary" onclick="terimaTugas('${row.orderId}', 'Desainer')"><i class="bi bi-plus-circle me-1"></i>Ikut Desain</button>`;
             }
         } 
-        // TAHAP COPYWRITE
         else if (row.status === "Wait Copywrite") {
             aksiHtml = `<button class="btn btn-sm btn-secondary" onclick="terimaTugas('${row.orderId}', 'Copywriter')">Terima Copywriting</button>`;
         } 
-        else if (row.status === "Copywrite") {
+        // 2. TAHAP COPYWRITE (Termasuk Revisi Caption)
+        else if (row.status === "Copywrite" || row.status === "Revisi Caption") {
             if (row.copywriter && row.copywriter.includes(currentNamaPanggilan)) {
                 aksiHtml = `<button class="btn btn-sm btn-warning text-dark" onclick="bukaModalCopywrite('${row.orderId}')">Unggah Caption</button>`;
             } else {
                 aksiHtml = `<button class="btn btn-sm btn-outline-secondary" onclick="terimaTugas('${row.orderId}', 'Copywriter')"><i class="bi bi-plus-circle me-1"></i>Ikut Copywrite</button>`;
             }
         } 
-        // TAHAP PUBLIKASI
         else if (row.status === "Publication") {
             aksiHtml = `<button class="btn btn-sm btn-dark" onclick="bukaModalPublikasi('${row.orderId}')">Publikasi Konten</button>`;
         }
     } 
     else if (currentRole === "dosen") {
-        // TAHAP DOSEN (Ini yang sebelumnya tertimpa THL)
-        if (row.status === "Request") {
-            if (row.pemberiOrder === myKode) {
-                aksiHtml = `<button class="btn btn-sm btn-outline-danger" title="Hapus" onclick="hapusPesanan('${row.orderId}')"><i class="bi bi-trash"></i></button>`;
-            }
+        if (row.status === "Request" && row.pemberiOrder === myKode) {
+            aksiHtml = `<button class="btn btn-sm btn-outline-danger" title="Hapus" onclick="hapusPesanan('${row.orderId}')"><i class="bi bi-trash"></i></button>`;
         } 
         else if (row.status === "QC") {
             if(row.reviewer === myKode || row.pemberiOrder === myKode) {
@@ -238,13 +304,15 @@ function generateAksiStatus(row) {
     }
 
     let picInfo = "";
-    if (row.desainer && (row.status === "On Process" || row.status === "Revision")) {
+    if (row.desainer && ["On Process", "Revisi Desain", "Revision"].includes(row.status)) {
         picInfo = `<div class="small mt-1 text-primary"><i class="bi bi-palette me-1"></i>${row.desainer}</div>`;
-    } else if (row.copywriter && row.status === "Copywrite") {
+    } else if (row.copywriter && ["Copywrite", "Revisi Caption"].includes(row.status)) {
         picInfo = `<div class="small mt-1 text-success"><i class="bi bi-pen me-1"></i>${row.copywriter}</div>`;
     }
-    if(row.catatanRevisi && (row.status === "Revision" || row.status === "Copywrite" || row.status === "On Process")) {
-        picInfo += `<div class="small text-danger mt-1">Revisi: ${row.catatanRevisi}</div>`;
+
+    // Tampilkan catatan dosen di semua state revisi
+    if(row.catatanRevisi && row.status.includes("Revisi")) {
+        picInfo += `<div class="small text-danger mt-1 fw-bold">Note QC: ${row.catatanRevisi}</div>`;
     }
 
     return `<div class="mb-2">${badge}<br><div class="d-flex align-items-center mt-1">${btnMata}${btnEdit}${aksiHtml}</div>${picInfo}</div>`;
@@ -255,8 +323,8 @@ function generateStepper(row) {
     const stepIcons = ['<i class="bi bi-1-circle"></i>', '<i class="bi bi-2-circle"></i>', '<i class="bi bi-3-circle"></i>', '<i class="bi bi-4-circle"></i>', '<i class="bi bi-5-circle"></i>', `<i class="bi bi-patch-check-fill ${row.status === 'Published' ? 'text-warning' : 'text-success'}" style="font-size: 1.4rem;"></i>`]; 
 
     let uiStep = 0;
-    if(row.status === "On Process" || row.status === "Revision") uiStep = 1;
-    if(row.status === "Wait Copywrite" || row.status === "Copywrite") uiStep = 2;
+    if(["On Process", "Revisi Desain", "Revision"].includes(row.status)) uiStep = 1;
+    if(["Wait Copywrite", "Copywrite", "Revisi Caption"].includes(row.status)) uiStep = 2;
     if(row.status === "QC") uiStep = 3;
     if(row.status === "Publication") uiStep = 4;
     if(row.status === "Published") uiStep = 5;
@@ -274,6 +342,30 @@ function generateStepper(row) {
 }
 
 // --- FUNGSI OPERASIONAL DOSEN ---
+// FUNGSI TOGGLE FILTER
+window.toggleFilter = function(tipe) {
+    filterState[tipe] = !filterState[tipe];
+    
+    // Update visual tombol
+    const btnMap = { 
+        'dosenPesanan': { id: 'btnFiltDosenPesanan', classAktif: 'btn-primary', classPasif: 'btn-outline-primary' },
+        'dosenQC': { id: 'btnFiltDosenQC', classAktif: 'btn-warning', classPasif: 'btn-outline-warning' },
+        'thlDesain': { id: 'btnFiltThlDesain', classAktif: 'btn-info', classPasif: 'btn-outline-info' },
+        'thlCopy': { id: 'btnFiltThlCopy', classAktif: 'btn-success', classPasif: 'btn-outline-success' }
+    };
+    
+    const btn = document.getElementById(btnMap[tipe].id);
+    if (filterState[tipe]) {
+        btn.classList.remove(btnMap[tipe].classPasif); btn.classList.add(btnMap[tipe].classAktif);
+        if(tipe==='dosenQC' || tipe==='thlDesain') btn.classList.remove('text-dark'); // styling khusus
+    } else {
+        btn.classList.remove(btnMap[tipe].classAktif); btn.classList.add(btnMap[tipe].classPasif);
+        if(tipe==='dosenQC' || tipe==='thlDesain') btn.classList.add('text-dark');
+    }
+    
+    renderSemuaUI();
+};
+
 window.bukaModalPesanan = function() {
     document.getElementById("formPesananDesain").reset();
     document.getElementById("modalPesananDesain").querySelector(".modal-title").innerText = "Buat Pesanan Desain Baru";
@@ -321,21 +413,109 @@ window.bukaModalDetail = function(orderId) {
     const row = rawTrackerData.find(r => r.orderId === orderId);
     if (!row) return;
     
+    // Reset Form & State
+    document.getElementById("formEditDetail").reset();
+    document.getElementById("detOrderId").value = orderId;
+    const btnSimpan = document.getElementById("btnSimpanDetail");
+    btnSimpan.classList.add("d-none");
+    let statusAkses = "Hanya Lihat";
+    let isEditing = false;
+
+    // Isi Info Statis
     document.getElementById("detTanggal").textContent = row.tanggal;
     document.getElementById("detPemberi").textContent = row.pemberiOrder;
-    document.getElementById("detJenis").textContent = row.jenisKonten;
-    document.getElementById("detJudul").textContent = row.judul;
-    document.getElementById("detArahan").textContent = row.detail;
+    document.getElementById("detDesainer").textContent = row.desainer || "-";
+    document.getElementById("detCopywriter").textContent = row.copywriter || "-";
+    document.getElementById("detReviewer").textContent = row.reviewer || "-";
+
+    // Isi Data Form
+    document.getElementById("detJenis").value = row.jenisKonten;
+    document.getElementById("detJudul").value = row.judul;
+    document.getElementById("detArahan").value = row.detail;
+    document.getElementById("detDokumenLink").value = row.linkDokumentasi;
+    document.getElementById("detLinkDesain").value = row.linkDesain;
+    document.getElementById("detMedsos").value = row.medsos;
+    document.getElementById("detCaption").value = row.caption;
+
+    // Logika Disable/Enable Field berdasarkan Role & Status
+    const fieldsDosen = document.querySelectorAll(".det-dosen");
+    const fieldsDesain = document.querySelectorAll(".det-desain");
+    const fieldsCopy = document.querySelectorAll(".det-copy");
     
-    if (row.linkDokumentasi) {
-        document.getElementById("detDokumenArea").classList.remove("d-none");
-        document.getElementById("detDokumenLink").href = row.linkDokumentasi;
+    fieldsDosen.forEach(f => f.disabled = true);
+    fieldsDesain.forEach(f => f.disabled = true);
+    fieldsCopy.forEach(f => f.disabled = true);
+
+    const myKode = getKodeDosenByNama(JSON.parse(sessionStorage.getItem("user")).nama);
+
+    if (currentRole === "dosen" && row.pemberiOrder === myKode && row.status !== "Published") {
+        fieldsDosen.forEach(f => f.disabled = false);
+        isEditing = true; statusAkses = "Akses Edit (Pemberi Tugas)";
+    } 
+    else if (currentRole === "thl") {
+        const isMyDesain = row.desainer && row.desainer.includes(currentNamaPanggilan);
+        const isMyCopy = row.copywriter && row.copywriter.includes(currentNamaPanggilan);
+        
+        // Desainer bisa edit di tahap On Process, Wait Copywrite, Copywrite, atau Revision
+        if (isMyDesain && ["On Process", "Wait Copywrite", "Copywrite", "Revision"].includes(row.status)) {
+            fieldsDesain.forEach(f => f.disabled = false);
+            isEditing = true; statusAkses = "Akses Edit (Desainer)";
+        }
+        // Copywriter bisa edit di tahap Copywrite
+        if (isMyCopy && row.status === "Copywrite") {
+            fieldsCopy.forEach(f => f.disabled = false);
+            isEditing = true; statusAkses = "Akses Edit (Copywriter)";
+        }
+    }
+
+    if (isEditing) btnSimpan.classList.remove("d-none");
+    document.getElementById("detStatusAkses").textContent = statusAkses;
+
+    // Handle Link Desain Button
+    const btnBuka = document.getElementById("btnBukaDesain");
+    if(row.linkDesain) {
+        btnBuka.href = row.linkDesain; btnBuka.classList.remove("disabled");
     } else {
-        document.getElementById("detDokumenArea").classList.add("d-none");
+        btnBuka.href = "#"; btnBuka.classList.add("disabled");
+    }
+
+    // Tampilkan Catatan QC jika ada
+    if(row.catatanRevisi) {
+        document.getElementById("areaCatatanQC").classList.remove("d-none");
+        document.getElementById("detCatatanQC").textContent = row.catatanRevisi;
+    } else {
+        document.getElementById("areaCatatanQC").classList.add("d-none");
     }
 
     new bootstrap.Modal(document.getElementById('modalDetailPesanan')).show();
 };
+
+document.getElementById("formEditDetail").addEventListener("submit", function(e) {
+    e.preventDefault();
+    Swal.fire({ title: 'Menyimpan Perubahan...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    
+    // Kirim semua data, backend hanya akan memproses yang dikirim sesuai kebutuhan (UpdateStatus universal)
+    const payload = {
+        action: currentRole === "dosen" ? "editOrder" : "updateStatus",
+        orderId: document.getElementById("detOrderId").value,
+    };
+
+    if (currentRole === "dosen") {
+        payload.data = {
+            jenisKonten: document.getElementById("detJenis").value,
+            judul: document.getElementById("detJudul").value,
+            detail: document.getElementById("detArahan").value,
+            linkDokumentasi: document.getElementById("detDokumenLink").value
+        };
+    } else {
+        payload.status = rawTrackerData.find(r => r.orderId === payload.orderId).status; // Pertahankan status
+        payload.linkDesain = document.getElementById("detLinkDesain").value;
+        payload.medsos = document.getElementById("detMedsos").value;
+        payload.caption = document.getElementById("detCaption").value;
+    }
+
+    postTrackerAPI(payload, 'modalDetailPesanan');
+});
 
 window.terimaTugas = function(orderId, roleType) {
     Swal.fire({ title: 'Memproses...', didOpen: () => Swal.showLoading() });
@@ -349,13 +529,10 @@ window.bukaModalDraft = function(orderId) {
     document.getElementById("formUnggahDraft").reset();
     document.getElementById("draftOrderId").value = orderId;
     document.getElementById("draftJudul").value = row.judul;
-    
-    // Isi otomatis Link Desain jika sebelumnya sudah ada
     if (row.linkDesain) document.getElementById("draftLink").value = row.linkDesain;
     
-    // Isi otomatis Multiple Select Medsos
     const medsosSelect = document.getElementById("draftMedsos");
-    Array.from(medsosSelect.options).forEach(opt => opt.selected = false); // Reset semua
+    Array.from(medsosSelect.options).forEach(opt => opt.selected = false);
     if (row.medsos) {
         const selectedArr = row.medsos.split(", ");
         Array.from(medsosSelect.options).forEach(opt => {
@@ -363,12 +540,24 @@ window.bukaModalDraft = function(orderId) {
         });
     }
 
-    // Isi otomatis Reviewer
     const selectReviewer = document.getElementById("draftReviewer");
     if (row.reviewer && Array.from(selectReviewer.options).some(opt => opt.value === row.reviewer)) {
         selectReviewer.value = row.reviewer;
     } else if (Array.from(selectReviewer.options).some(opt => opt.value === row.pemberiOrder)) {
         selectReviewer.value = row.pemberiOrder;
+    }
+
+    // UBAH TEKS TOMBOL DINAMIS SESUAI STATUS REVISI
+    const btnSubmit = document.getElementById("btnSubmitDraft");
+    if (row.status === "Revisi Desain") {
+        btnSubmit.innerText = "Ajukan Langsung ke QC";
+        btnSubmit.className = "btn btn-warning text-dark fw-bold";
+    } else if (row.status === "Revision") {
+        btnSubmit.innerText = "Lanjut ke Copywriter";
+        btnSubmit.className = "btn btn-info fw-bold";
+    } else {
+        btnSubmit.innerText = "Ajukan Copywrite";
+        btnSubmit.className = "btn btn-primary fw-bold";
     }
 
     new bootstrap.Modal(document.getElementById('modalUnggahDraft')).show();
@@ -392,22 +581,51 @@ window.bukaModalCopywrite = function(orderId) {
 };
 
 window.bukaModalPublikasi = function(orderId) {
+    // 1. Cari data baris yang sesuai
+    const row = rawTrackerData.find(r => r.orderId === orderId);
+    if (!row) return;
+
     document.getElementById("formPublikasi").reset();
     document.getElementById("pubOrderId").value = orderId;
+    
+    // 2. Isi area preview untuk publisher
+    document.getElementById("pubLinkDesain").href = row.linkDesain || "#";
+    document.getElementById("pubMedsos").textContent = row.medsos || "-";
+    document.getElementById("pubCaptionView").value = row.caption || "Tidak ada caption.";
+
+    // Set default tanggal hari ini pada input tanggal publikasi (Opsional, agar lebih cepat)
+    document.getElementById("pubTanggal").valueAsDate = new Date();
+
     new bootstrap.Modal(document.getElementById('modalPublikasi')).show();
 };
 
 // 6. EVENT LISTENER DRAFT & COPYWRITE (Fix Loading)
 document.getElementById("formUnggahDraft").addEventListener("submit", function(e) {
     e.preventDefault();
+    
+    const orderId = document.getElementById("draftOrderId").value;
+    const row = rawTrackerData.find(r => r.orderId === orderId);
+    
+    // Tentukan Tujuan Berikutnya berdasarkan Status Saat Ini
+    let nextStatus = "Wait Copywrite"; // Default (On Process)
+    let msgLoading = "Mengajukan Copywrite...";
+
+    if (row.status === "Revisi Desain") {
+        nextStatus = "QC"; // Skip copywrite karena hanya desain yang direvisi
+        msgLoading = "Mengirim ulang ke QC...";
+    } else if (row.status === "Revision") {
+        nextStatus = "Copywrite"; // Skip 'Wait Copywrite' langsung ke Copywrite
+        msgLoading = "Meneruskan ke Copywriter...";
+    }
+
     const medsosSelect = document.getElementById("draftMedsos");
     const selectedMedsos = Array.from(medsosSelect.selectedOptions).map(opt => opt.value).join(", ");
     
-    Swal.fire({ title: 'Mengajukan Copywrite...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    Swal.fire({ title: msgLoading, allowOutsideClick: false, didOpen: () => Swal.showLoading() });
     
     postTrackerAPI({
-        action: "updateStatus", orderId: document.getElementById("draftOrderId").value,
-        status: "Wait Copywrite", linkDesain: document.getElementById("draftLink").value,
+        action: "updateStatus", orderId: orderId,
+        status: nextStatus, linkDesain: document.getElementById("draftLink").value,
         medsos: selectedMedsos, reviewer: document.getElementById("draftReviewer").value
     }, 'modalUnggahDraft');
 });
@@ -493,7 +711,7 @@ function hitungNotifikasi(data) {
 
     if (currentRole === "thl") {
         // THL lihat Request, Revisi, Wait Copywrite, dan Publikasi
-        notifs = data.filter(r => ["Request", "Wait Copywrite", "Publication", "Revision"].includes(r.status));
+        notifs = data.filter(r => ["Request", "Wait Copywrite", "Publication", "Revisi Desain", "Revisi Caption", "Revision"].includes(r.status));
     } else if (currentRole === "dosen") {
         // Dosen lihat On Process (Terima), QC (Ajukan)
         notifs = data.filter(r => (r.status === "QC" || r.status === "On Process") && r.pemberiOrder === kodeSaya);
@@ -514,7 +732,7 @@ function hitungNotifikasi(data) {
                 if(n.status === "Request") { msg = `Pesanan Baru: ${n.pemberiOrder}`; icon = "bi-file-earmark-plus"; color = "text-primary"; }
                 else if(n.status === "Wait Copywrite") { msg = `Siap Copywrite: ${n.judul}`; icon = "bi-card-text"; color = "text-secondary"; }
                 else if(n.status === "Publication") { msg = `QC Lulus, Siap Publish: ${n.judul}`; icon = "bi-send"; color = "text-success"; }
-                else if(n.status === "Revision") { msg = `Revisi QC: ${n.judul}`; icon = "bi-x-circle"; color = "text-danger"; }
+                else if(n.status.includes("Revisi")) { msg = `Revisi QC: ${n.judul}`; icon = "bi-x-circle"; color = "text-danger"; }
             } else {
                 if(n.status === "QC") { msg = `Menunggu QC: ${n.judul}`; icon = "bi-search"; color = "text-warning"; }
                 else if(n.status === "On Process") { msg = `Dikerjakan oleh: ${n.desainer}`; icon = "bi-palette"; color = "text-info"; }
@@ -559,11 +777,10 @@ function renderPublishedTable(data) {
 function renderCharts(publishedData, filterBulan) {
     document.getElementById("lblTargetChart").textContent = filterBulan === "Semua" ? "Tahun Ini" : filterBulan;
     document.getElementById("lblJenisChart").textContent = filterBulan === "Semua" ? "Tahun Ini" : filterBulan;
+    document.getElementById("lblMedsosChart").textContent = filterBulan === "Semua" ? "Tahun Ini" : filterBulan;
 
     const count = publishedData.length;
     const target = filterBulan === "Semua" ? 384 : 32;
-
-    // Menghitung persentase
     const persentase = target > 0 ? ((count / target) * 100).toFixed(1) : 0;
 
     // 1. PLUGIN CUSTOM UNTUK TEKS DI TENGAH DOUGHNUT CHART
@@ -613,42 +830,40 @@ function renderCharts(publishedData, filterBulan) {
     });
 
     // 2. MENGHITUNG DATA UNTUK BAR CHART
+    // Chart Jenis Konten (Tetap sama)
     const countsByJenis = {};
     publishedData.forEach(r => { countsByJenis[r.jenisKonten] = (countsByJenis[r.jenisKonten] || 0) + 1; });
-    
-    // Menghitung nilai maksimum untuk sumbu Y (+2)
-    const dataValues = Object.values(countsByJenis);
-    const maxData = dataValues.length > 0 ? Math.max(...dataValues) : 0;
-    const yAxisMax = maxData + 2;
+    const maxJenis = Math.max(0, ...Object.values(countsByJenis));
 
     if(chartJenisInstance) chartJenisInstance.destroy();
     chartJenisInstance = new Chart(document.getElementById('chartJenisKonten'), {
         type: 'bar',
+        data: { labels: Object.keys(countsByJenis), datasets: [{ label: 'Jumlah', data: Object.values(countsByJenis), backgroundColor: '#0d6efd', borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: maxJenis + 2, ticks: { stepSize: 1, precision: 0 } } } }
+    });
+
+    // BARU: Chart Distribusi Medsos
+    const countsByMedsos = {};
+    publishedData.forEach(r => {
+        if(r.medsos) {
+            r.medsos.split(", ").forEach(sosmed => {
+                countsByMedsos[sosmed] = (countsByMedsos[sosmed] || 0) + 1;
+            });
+        }
+    });
+    const maxMedsos = Math.max(0, ...Object.values(countsByMedsos));
+
+    if(chartSosmedInstance) chartSosmedInstance.destroy();
+    chartSosmedInstance = new Chart(document.getElementById('chartSosmedKonten'), {
+        type: 'bar',
         data: { 
-            labels: Object.keys(countsByJenis), 
-            datasets: [{ 
-                label: 'Jumlah Konten', 
-                data: dataValues, 
-                backgroundColor: '#0d6efd',
-                borderRadius: 4 // Sedikit melengkungkan ujung bar agar estetis
-            }] 
+            labels: Object.keys(countsByMedsos), 
+            datasets: [{ label: 'Distribusi', data: Object.values(countsByMedsos), backgroundColor: '#198754', borderRadius: 4 }] 
         },
         options: { 
-            responsive: true, 
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false } // Menyembunyikan legend karena hanya ada 1 dataset
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: yAxisMax, // Set nilai maksimum +2 dari data tertinggi
-                    ticks: {
-                        stepSize: 1, // Memaksa step per 1 angka
-                        precision: 0 // Menghilangkan desimal (0.1, 0.2)
-                    }
-                }
-            }
+            responsive: true, maintainAspectRatio: false, 
+            plugins: { legend: { display: false } }, 
+            scales: { y: { beginAtZero: true, max: maxMedsos + 2, ticks: { stepSize: 1, precision: 0 } } } 
         }
     });
 }

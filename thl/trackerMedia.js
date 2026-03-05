@@ -187,7 +187,7 @@ function generateAksiStatus(row) {
     
     // --- TOMBOL GLOBAL ---
     // Tombol Mata (Lihat Arahan) selalu ada untuk THL dan Dosen
-    let btnMata = `<button class="btn btn-sm btn-outline-secondary me-1" title="Lihat Arahan" onclick="bukaModalDetail('${row.orderId}')"><i class="bi bi-eye"></i></button>`;
+    let btnMata = `<button class="btn btn-sm btn-outline-secondary me-1" title="Lihat Arahan" onclick="bukaModalDetail('${row.orderId}')"><i class="bi bi-info-circle"></i></button>`;
     
     // Tombol Edit selalu ada untuk Dosen yang membuat order (selama belum Published)
     let btnEdit = "";

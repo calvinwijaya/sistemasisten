@@ -198,8 +198,7 @@
 </div>
 
 <div class="modal fade" id="modalUnggahCopywrite" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
+    <div class="modal-dialog modal-lg"> <div class="modal-content">
             <div class="modal-header bg-info text-dark">
                 <h5 class="modal-title">Unggah Copywriting & Caption</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -207,13 +206,27 @@
             <form id="formCopywrite">
                 <div class="modal-body">
                     <input type="hidden" id="cwOrderId">
+                    
+                    <div class="row mb-3 p-3 bg-light rounded border mx-1">
+                        <div class="col-md-6 mb-2 mb-md-0">
+                            <h6 class="small text-muted fw-bold mb-1">Referensi Desain:</h6>
+                            <a href="#" id="cwLinkDesain" target="_blank" class="btn btn-outline-primary btn-sm w-100">
+                                <i class="bi bi-image me-1"></i> Buka Hasil Desain
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="small text-muted fw-bold mb-1">Target Medsos:</h6>
+                            <div id="cwMedsos" class="fw-bold text-dark text-wrap"></div>
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Narasi Caption / Link GDocs</label>
-                        <textarea id="cwCaption" class="form-control" rows="4" required></textarea>
+                        <textarea id="cwCaption" class="form-control" rows="5" placeholder="Ketik caption atau tempel link dokumen di sini..." required></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-info">Ajukan ke QC</button>
+                    <button type="submit" class="btn btn-info fw-bold">Ajukan ke QC</button>
                 </div>
             </form>
         </div>
@@ -249,9 +262,20 @@
                     <textarea id="qcCatatan" class="form-control" rows="3" placeholder="Tulis revisi (jika ada)..."></textarea>
                 </div>
             </div>
-            <div class="modal-footer justify-content-between">
-                <button type="button" class="btn btn-danger" onclick="prosesQC('Revision')">Revisi Desain/Copy</button>
-                <button type="button" class="btn btn-success" onclick="prosesQC('Publication')">Terima (Maju Publikasi)</button>
+            
+            <div class="modal-footer justify-content-between bg-light">
+                <div class="dropdown">
+                    <button class="btn btn-danger dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-x-circle me-1"></i>Kembalikan Revisi
+                    </button>
+                    <ul class="dropdown-menu shadow">
+                        <li><button type="button" class="dropdown-item fw-bold text-danger py-2" onclick="prosesQC('Revision')"><i class="bi bi-palette me-2"></i>Ke Desainer (Revisi Desain)</button></li>
+                        <li><button type="button" class="dropdown-item fw-bold text-warning py-2" onclick="prosesQC('Copywrite')"><i class="bi bi-pen me-2"></i>Ke Copywriter (Revisi Caption)</button></li>
+                    </ul>
+                </div>
+                <button type="button" class="btn btn-success fw-bold" onclick="prosesQC('Publication')">
+                    <i class="bi bi-check-circle me-1"></i>Terima (Maju Publikasi)
+                </button>
             </div>
         </div>
     </div>

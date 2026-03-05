@@ -185,56 +185,50 @@ function generateAksiStatus(row) {
     let badge = `<span class="badge bg-dark mb-2">${row.status}</span>`;
     let aksiHtml = "";
     
-    // --- TOMBOL GLOBAL ---
-    // Tombol Mata (Lihat Arahan) selalu ada untuk THL dan Dosen
     let btnMata = `<button class="btn btn-sm btn-outline-secondary me-1" title="Lihat Arahan" onclick="bukaModalDetail('${row.orderId}')"><i class="bi bi-info-circle"></i></button>`;
     
-    // Tombol Edit selalu ada untuk Dosen yang membuat order (selama belum Published)
     let btnEdit = "";
     const myKode = getKodeDosenByNama(JSON.parse(sessionStorage.getItem("user")).nama);
-    
     if (currentRole === "dosen" && row.pemberiOrder === myKode && row.status !== "Published") {
         btnEdit = `<button class="btn btn-sm btn-outline-primary me-1" title="Edit Pesanan" onclick="editPesanan('${row.orderId}')"><i class="bi bi-pencil"></i></button>`;
     }
 
-    // --- TOMBOL BERDASARKAN STATUS & ROLE ---
     if (currentRole === "thl") {
+        // TAHAP DESAIN
         if (row.status === "Request") {
             aksiHtml = `<button class="btn btn-sm btn-primary" onclick="terimaTugas('${row.orderId}', 'Desainer')">Terima Desain</button>`;
         } 
         else if (row.status === "On Process" || row.status === "Revision") {
-            // CEK OTORISASI DESAINER: Hanya yang namanya ada di row.desainer yang bisa unggah
             if (row.desainer && row.desainer.includes(currentNamaPanggilan)) {
-                aksiHtml = `<button class="btn btn-sm btn-info" onclick="bukaModalDraft('${row.orderId}', '${row.judul}', '${row.pemberiOrder}')">Unggah Desain</button>`;
+                aksiHtml = `<button class="btn btn-sm btn-info" onclick="bukaModalDraft('${row.orderId}')">Unggah Desain</button>`;
             } else {
-                aksiHtml = `<span class="small text-muted fst-italic"><i class="bi bi-lock-fill me-1"></i>Akses Desain: ${row.desainer}</span>`;
+                aksiHtml = `<button class="btn btn-sm btn-outline-primary" onclick="terimaTugas('${row.orderId}', 'Desainer')"><i class="bi bi-plus-circle me-1"></i>Ikut Desain</button>`;
             }
         } 
+        // TAHAP COPYWRITE
         else if (row.status === "Wait Copywrite") {
             aksiHtml = `<button class="btn btn-sm btn-secondary" onclick="terimaTugas('${row.orderId}', 'Copywriter')">Terima Copywriting</button>`;
         } 
         else if (row.status === "Copywrite") {
-            // CEK OTORISASI COPYWRITER: Hanya yang namanya ada di row.copywriter yang bisa unggah
             if (row.copywriter && row.copywriter.includes(currentNamaPanggilan)) {
                 aksiHtml = `<button class="btn btn-sm btn-warning text-dark" onclick="bukaModalCopywrite('${row.orderId}')">Unggah Caption</button>`;
             } else {
-                aksiHtml = `<span class="small text-muted fst-italic"><i class="bi bi-lock-fill me-1"></i>Akses Copy: ${row.copywriter}</span>`;
+                aksiHtml = `<button class="btn btn-sm btn-outline-secondary" onclick="terimaTugas('${row.orderId}', 'Copywriter')"><i class="bi bi-plus-circle me-1"></i>Ikut Copywrite</button>`;
             }
         } 
+        // TAHAP PUBLIKASI
         else if (row.status === "Publication") {
-            // Publikasi biasanya bisa dilakukan oleh siapa saja dalam tim, 
-            // tapi jika ingin dibatasi ke desainer/copywriter yang terlibat, bisa pakai kondisi ini:
-            if ((row.desainer && row.desainer.includes(currentNamaPanggilan)) || (row.copywriter && row.copywriter.includes(currentNamaPanggilan))) {
-                aksiHtml = `<button class="btn btn-sm btn-dark" onclick="bukaModalPublikasi('${row.orderId}')">Publikasi Konten</button>`;
-            } else {
-                aksiHtml = `<span class="small text-muted fst-italic"><i class="bi bi-lock-fill me-1"></i>Hanya tim terkait yang bisa mempublikasikan</span>`;
-            }
+            aksiHtml = `<button class="btn btn-sm btn-dark" onclick="bukaModalPublikasi('${row.orderId}')">Publikasi Konten</button>`;
         }
     } 
     else if (currentRole === "dosen") {
+        // TAHAP DOSEN (Ini yang sebelumnya tertimpa THL)
         if (row.status === "Request") {
-            aksiHtml = `<button class="btn btn-sm btn-outline-danger" title="Hapus" onclick="hapusPesanan('${row.orderId}')"><i class="bi bi-trash"></i></button>`;
-        } else if (row.status === "QC") {
+            if (row.pemberiOrder === myKode) {
+                aksiHtml = `<button class="btn btn-sm btn-outline-danger" title="Hapus" onclick="hapusPesanan('${row.orderId}')"><i class="bi bi-trash"></i></button>`;
+            }
+        } 
+        else if (row.status === "QC") {
             if(row.reviewer === myKode || row.pemberiOrder === myKode) {
                 aksiHtml = `<button class="btn btn-sm btn-warning text-dark" onclick="bukaModalQC('${row.orderId}')">Cek QC</button>`;
             } else {
@@ -243,15 +237,13 @@ function generateAksiStatus(row) {
         }
     }
 
-    // --- INFORMASI DESAINER & REVISI ---
     let picInfo = "";
     if (row.desainer && (row.status === "On Process" || row.status === "Revision")) {
         picInfo = `<div class="small mt-1 text-primary"><i class="bi bi-palette me-1"></i>${row.desainer}</div>`;
     } else if (row.copywriter && row.status === "Copywrite") {
         picInfo = `<div class="small mt-1 text-success"><i class="bi bi-pen me-1"></i>${row.copywriter}</div>`;
     }
-
-    if(row.catatanRevisi && (row.status === "Revision" || row.status === "On Process")) {
+    if(row.catatanRevisi && (row.status === "Revision" || row.status === "Copywrite" || row.status === "On Process")) {
         picInfo += `<div class="small text-danger mt-1">Revisi: ${row.catatanRevisi}</div>`;
     }
 
@@ -287,7 +279,7 @@ window.bukaModalPesanan = function() {
     document.getElementById("modalPesananDesain").querySelector(".modal-title").innerText = "Buat Pesanan Desain Baru";
     
     const btn = document.getElementById("btnSubmitPesanan");
-    btn.setAttribute("data-mode", "create"); // Set mode
+    btn.setAttribute("data-mode", "create"); // Memberi tahu setupEventListeners() bahwa ini mode Create
     btn.disabled = false; btn.innerText = "Buat Pesanan";
 
     new bootstrap.Modal(document.getElementById('modalPesananDesain')).show();
@@ -305,7 +297,7 @@ window.editPesanan = function(orderId) {
     document.getElementById("modalPesananDesain").querySelector(".modal-title").innerText = "Edit Pesanan Desain";
     
     const btn = document.getElementById("btnSubmitPesanan");
-    btn.setAttribute("data-mode", "edit"); // Set mode
+    btn.setAttribute("data-mode", "edit"); // Memberi tahu setupEventListeners() bahwa ini mode Edit
     btn.setAttribute("data-order-id", orderId);
     btn.disabled = false; btn.innerText = "Simpan Perubahan";
 
@@ -350,22 +342,52 @@ window.terimaTugas = function(orderId, roleType) {
     postTrackerAPI({ action: "terimaTugas", orderId: orderId, roleType: roleType, namaPIC: currentNamaPanggilan });
 };
 
-window.bukaModalDraft = function(orderId, judul, pemberiOrder) {
+window.bukaModalDraft = function(orderId) {
+    const row = rawTrackerData.find(r => r.orderId === orderId);
+    if (!row) return;
+
     document.getElementById("formUnggahDraft").reset();
     document.getElementById("draftOrderId").value = orderId;
-    document.getElementById("draftJudul").value = judul;
+    document.getElementById("draftJudul").value = row.judul;
     
+    // Isi otomatis Link Desain jika sebelumnya sudah ada
+    if (row.linkDesain) document.getElementById("draftLink").value = row.linkDesain;
+    
+    // Isi otomatis Multiple Select Medsos
+    const medsosSelect = document.getElementById("draftMedsos");
+    Array.from(medsosSelect.options).forEach(opt => opt.selected = false); // Reset semua
+    if (row.medsos) {
+        const selectedArr = row.medsos.split(", ");
+        Array.from(medsosSelect.options).forEach(opt => {
+            if (selectedArr.includes(opt.value)) opt.selected = true;
+        });
+    }
+
+    // Isi otomatis Reviewer
     const selectReviewer = document.getElementById("draftReviewer");
-    if(Array.from(selectReviewer.options).some(opt => opt.value === pemberiOrder)){
-        selectReviewer.value = pemberiOrder;
+    if (row.reviewer && Array.from(selectReviewer.options).some(opt => opt.value === row.reviewer)) {
+        selectReviewer.value = row.reviewer;
+    } else if (Array.from(selectReviewer.options).some(opt => opt.value === row.pemberiOrder)) {
+        selectReviewer.value = row.pemberiOrder;
     }
 
     new bootstrap.Modal(document.getElementById('modalUnggahDraft')).show();
 };
 
 window.bukaModalCopywrite = function(orderId) {
+    const row = rawTrackerData.find(r => r.orderId === orderId);
+    if (!row) return;
+
     document.getElementById("formCopywrite").reset();
     document.getElementById("cwOrderId").value = orderId;
+    
+    // Isi Preview Desain untuk Copywriter
+    document.getElementById("cwLinkDesain").href = row.linkDesain || "#";
+    document.getElementById("cwMedsos").textContent = row.medsos || "Belum ditentukan";
+    
+    // Isi otomatis Caption jika sebelumnya sudah ada (kasus Revisi)
+    if (row.caption) document.getElementById("cwCaption").value = row.caption;
+
     new bootstrap.Modal(document.getElementById('modalUnggahCopywrite')).show();
 };
 

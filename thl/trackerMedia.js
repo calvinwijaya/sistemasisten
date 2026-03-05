@@ -520,7 +520,7 @@ function getKodeDosenByNama(namaUser) {
 }
 
 function getBadgeColor(jenis) {
-    const colors = { "Feeds/Berita": "bg-primary", "Poster": "bg-danger", "Newsletter": "bg-success", "Video Shorts/Reels": "bg-warning text-dark", "Story": "bg-info text-dark", "Website": "bg-dark", "Video Dokumenter": "bg-secondary", "Cover": "bg-purple" };
+    const colors = { "Feeds/Berita": "bg-primary", "Poster": "bg-danger", "Newsletter": "bg-success", "Video Shorts/Reels": "bg-warning text-dark", "Story": "bg-info text-dark", "Website": "bg-dark", "Video Dokumenter": "bg-secondary", "Cover": "bg-success" };
     return colors[jenis] || "bg-secondary";
 }
 

@@ -535,25 +535,98 @@ function renderPublishedTable(data) {
 }
 
 function renderCharts(publishedData, filterBulan) {
-    // Logika Chart.js tetap sama
     document.getElementById("lblTargetChart").textContent = filterBulan === "Semua" ? "Tahun Ini" : filterBulan;
     document.getElementById("lblJenisChart").textContent = filterBulan === "Semua" ? "Tahun Ini" : filterBulan;
 
     const count = publishedData.length;
     const target = filterBulan === "Semua" ? 384 : 32;
 
+    // Menghitung persentase
+    const persentase = target > 0 ? ((count / target) * 100).toFixed(1) : 0;
+
+    // 1. PLUGIN CUSTOM UNTUK TEKS DI TENGAH DOUGHNUT CHART
+    const centerTextPlugin = {
+        id: 'centerText',
+        beforeDraw: function(chart) {
+            const width = chart.width,
+                  height = chart.height,
+                  ctx = chart.ctx;
+
+            ctx.restore();
+            // Menyesuaikan ukuran font secara dinamis dengan tinggi chart
+            const fontSize = (height / 110).toFixed(2);
+            ctx.font = "bold " + fontSize + "em sans-serif";
+            ctx.textBaseline = "middle";
+            ctx.fillStyle = "#198754"; // Warna hijau success agar senada
+
+            const text = persentase + "%",
+                  textX = Math.round((width - ctx.measureText(text).width) / 2),
+                  textY = height / 2;
+
+            ctx.fillText(text, textX, textY);
+            ctx.save();
+        }
+    };
+
     if(chartTargetInstance) chartTargetInstance.destroy();
     chartTargetInstance = new Chart(document.getElementById('chartTargetPublikasi'), {
-        type: 'doughnut', data: { labels: ['Tercapai', 'Sisa Target'], datasets: [{ data: [count, Math.max(0, target - count)], backgroundColor: ['#198754', '#e9ecef'] }] },
-        options: { responsive: true, maintainAspectRatio: false }
+        type: 'doughnut',
+        data: { 
+            labels: ['Tercapai', 'Sisa Target'], 
+            datasets: [{ 
+                data: [count, Math.max(0, target - count)], 
+                backgroundColor: ['#198754', '#e9ecef'],
+                borderWidth: 0 // Menghilangkan garis tepi agar lebih bersih
+            }] 
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false,
+            cutout: '75%', // Memperbesar lubang di tengah agar teks muat
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        },
+        plugins: [centerTextPlugin] // Memasukkan plugin teks ke dalam chart
     });
 
+    // 2. MENGHITUNG DATA UNTUK BAR CHART
     const countsByJenis = {};
     publishedData.forEach(r => { countsByJenis[r.jenisKonten] = (countsByJenis[r.jenisKonten] || 0) + 1; });
     
+    // Menghitung nilai maksimum untuk sumbu Y (+2)
+    const dataValues = Object.values(countsByJenis);
+    const maxData = dataValues.length > 0 ? Math.max(...dataValues) : 0;
+    const yAxisMax = maxData + 2;
+
     if(chartJenisInstance) chartJenisInstance.destroy();
     chartJenisInstance = new Chart(document.getElementById('chartJenisKonten'), {
-        type: 'bar', data: { labels: Object.keys(countsByJenis), datasets: [{ label: 'Jumlah Konten', data: Object.values(countsByJenis), backgroundColor: '#0d6efd' }] },
-        options: { responsive: true, maintainAspectRatio: false }
+        type: 'bar',
+        data: { 
+            labels: Object.keys(countsByJenis), 
+            datasets: [{ 
+                label: 'Jumlah Konten', 
+                data: dataValues, 
+                backgroundColor: '#0d6efd',
+                borderRadius: 4 // Sedikit melengkungkan ujung bar agar estetis
+            }] 
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false } // Menyembunyikan legend karena hanya ada 1 dataset
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: yAxisMax, // Set nilai maksimum +2 dari data tertinggi
+                    ticks: {
+                        stepSize: 1, // Memaksa step per 1 angka
+                        precision: 0 // Menghilangkan desimal (0.1, 0.2)
+                    }
+                }
+            }
+        }
     });
 }

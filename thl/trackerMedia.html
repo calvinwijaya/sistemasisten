@@ -1,0 +1,327 @@
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary fw-bold m-0"><i class="bi bi-kanban me-2"></i>Tracker Media Desain DTGD</h2>
+        <div class="d-flex align-items-center gap-3">
+            
+            <div class="dropdown" id="dropdownNotifArea">
+                <button class="btn btn-light btn-sm position-relative border shadow-sm rounded-pill px-3" data-bs-toggle="dropdown" aria-expanded="false" style="height: 31px;">
+                    <i class="bi bi-bell"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="badgeNotifMedia" style="display: none;">0</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow p-2" style="width: 320px; max-height: 400px; overflow-y: auto;">
+                    <li><h6 class="dropdown-header fw-bold text-dark border-bottom pb-2">Notifikasi Media</h6></li>
+                    <div id="listNotifMedia">
+                        <li><span class="dropdown-item text-muted small py-3 text-center">Tidak ada notifikasi baru.</span></li>
+                    </div>
+                </ul>
+            </div>
+
+            <button class="btn btn-primary btn-sm rounded-pill px-3" onclick="fetchTrackerData(true)">
+                <i class="bi bi-arrow-clockwise me-1"></i> Refresh Data
+            </button>
+
+            <button class="btn btn-success btn-sm rounded-pill px-3 d-none" id="btnBuatPesanan" onclick="bukaModalPesanan()">
+                <i class="bi bi-plus-lg me-1"></i> Buat Pesanan
+            </button>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-end mb-3 mt-4">
+        <h5 class="fw-bold text-dark m-0">Tabel Pesanan Media</h5>
+        <div class="d-flex gap-2">
+            <select id="filterBulanMedia" class="form-select form-select-sm" style="width: 120px;" onchange="renderSemuaUI()">
+                <option value="Semua">Semua Bulan</option>
+                <option value="Januari">Januari</option> <option value="Februari">Februari</option>
+                <option value="Maret">Maret</option> <option value="April">April</option>
+                <option value="Mei">Mei</option> <option value="Juni">Juni</option>
+                <option value="Juli">Juli</option> <option value="Agustus">Agustus</option>
+                <option value="September">September</option> <option value="Oktober">Oktober</option>
+                <option value="November">November</option> <option value="Desember">Desember</option>
+            </select>
+            <select id="filterTahunMedia" class="form-select form-select-sm" style="width: 100px;" onchange="renderSemuaUI()">
+                <option value="2026">2026</option> <option value="2027">2027</option>
+            </select>
+            <select id="sortMedia" class="form-select form-select-sm" style="width: 150px;" onchange="renderSemuaUI()">
+                <option value="tglOrder">Urut: Tgl Order</option>
+                <option value="jadwalPub">Urut: Jadwal Publikasi</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="trackerMediaContent">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2">Memuat data tracker...</p>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalPesananDesain" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Buat Pesanan Desain Baru</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formPesananDesain">
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Jenis Konten</label>
+                            <select id="tmdJenis" class="form-select" required>
+                                <option value="Feeds/Berita">Feeds/Berita</option>
+                                <option value="Poster">Poster</option>
+                                <option value="Newsletter">Newsletter</option>
+                                <option value="Video Shorts/Reels">Video Shorts/Reels</option>
+                                <option value="Story">Story</option>
+                                <option value="Website">Website</option>
+                                <option value="Video Dokumenter">Video Dokumenter</option>
+                            </select>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label small fw-bold">Judul Konten</label>
+                            <input type="text" id="tmdJudul" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Arahan Detail Konten</label>
+                        <textarea id="tmdDetail" class="form-control" rows="4" placeholder="Narasi terkait konten, bisa berupa 5W+1H, atau cantumkan link Google Docs berisi narasi konten..." required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Link Dokumentasi</label>
+                        <input type="url" id="tmdDokumentasi" class="form-control" placeholder="Link Google Drive Foto/Video">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success" id="btnSubmitPesanan">Buat Pesanan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalDetailPesanan" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-secondary text-white">
+                <h5 class="modal-title"><i class="bi bi-info-circle me-2"></i>Detail Arahan Desain</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="font-size: 0.9rem;">
+                <div class="row mb-2">
+                    <div class="col-4 fw-bold text-muted">Tanggal Order</div>
+                    <div class="col-8" id="detTanggal"></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-4 fw-bold text-muted">Pemberi Tugas</div>
+                    <div class="col-8" id="detPemberi"></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-4 fw-bold text-muted">Jenis Konten</div>
+                    <div class="col-8"><span class="badge bg-primary" id="detJenis"></span></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-4 fw-bold text-muted">Judul</div>
+                    <div class="col-8 fw-bold" id="detJudul"></div>
+                </div>
+                <hr>
+                <div class="mb-2 fw-bold text-muted">Arahan Detail:</div>
+                <div class="p-3 bg-light rounded text-wrap" id="detArahan" style="white-space: pre-wrap;"></div>
+                
+                <div class="mt-3" id="detDokumenArea">
+                    <div class="fw-bold text-muted mb-1">Link Dokumentasi:</div>
+                    <a href="#" id="detDokumenLink" target="_blank" class="btn btn-sm btn-outline-info w-100">
+                        <i class="bi bi-folder2-open me-2"></i>Buka Folder Dokumentasi
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalUnggahDraft" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Unggah Draft Desain</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formUnggahDraft">
+                <div class="modal-body">
+                    <input type="hidden" id="draftOrderId">
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">Judul Konten</label>
+                        <input type="text" id="draftJudul" class="form-control bg-light" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Link Draft Desain</label>
+                        <input type="url" id="draftLink" class="form-control" placeholder="Link Canva / Google Drive" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Platform Medsos (Bisa pilih lebih dari 1)</label>
+                        <select id="draftMedsos" class="form-select" multiple required style="height: 120px;">
+                            <option value="IG">Instagram</option>
+                            <option value="YT">YouTube</option>
+                            <option value="FB">Facebook</option>
+                            <option value="Tiktok">Tiktok</option>
+                            <option value="Website">Website</option>
+                            <option value="Cetak">Cetak</option>
+                            <option value="E-Mail">E-Mail</option>
+                        </select>
+                        <div class="form-text small text-muted">Tahan tombol Ctrl (Windows) atau Cmd (Mac) untuk memilih beberapa.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Reviewer (Dosen QC)</label>
+                        <select id="draftReviewer" class="form-select" required>
+                            <option value="TAD">TAD</option>
+                            <option value="DWL">DWL</option>
+                            <option value="HST">HST</option>
+                            <option value="CPT">CPT</option>
+                            <option value="MAA">MAA</option>
+                            <option value="PBS">PBS</option>
+                            <option value="CLV">CLV</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary" id="btnSubmitDraft">Ajukan Copywrite</button> </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalUnggahCopywrite" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-dark">
+                <h5 class="modal-title">Unggah Copywriting & Caption</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formCopywrite">
+                <div class="modal-body">
+                    <input type="hidden" id="cwOrderId">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Narasi Caption / Link GDocs</label>
+                        <textarea id="cwCaption" class="form-control" rows="4" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-info">Ajukan ke QC</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalReviewQC" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">Review & QC Desain</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="qcOrderId">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6 class="small text-muted mb-1">Link Desain:</h6>
+                        <a href="#" id="qcLinkDesain" target="_blank" class="btn btn-outline-primary btn-sm w-100">Buka Desain</a>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="small text-muted mb-1">Medsos Tujuan:</h6>
+                        <div id="qcMedsos" class="fw-bold text-dark"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Narasi Caption</label>
+                    <textarea id="qcCaptionView" class="form-control bg-light" rows="3" readonly></textarea>
+                </div>
+                <hr>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Catatan / Komentar</label>
+                    <textarea id="qcCatatan" class="form-control" rows="3" placeholder="Tulis revisi (jika ada)..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-danger" onclick="prosesQC('Revision')">Revisi Desain/Copy</button>
+                <button type="button" class="btn btn-success" onclick="prosesQC('Publication')">Terima (Maju Publikasi)</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalPublikasi" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title">Unggah Link Publikasi</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formPublikasi">
+                <div class="modal-body">
+                    <input type="hidden" id="pubOrderId">
+                    <div class="alert alert-secondary small">Isi setidaknya 1 link publikasi. Link akan digabungkan otomatis.</div>
+                    <div class="mb-2"><input type="url" class="form-control link-pub-input" placeholder="Link 1 (Wajib)" required></div>
+                    <div class="mb-2"><input type="url" class="form-control link-pub-input" placeholder="Link 2 (Opsional)"></div>
+                    <div class="mb-2"><input type="url" class="form-control link-pub-input" placeholder="Link 3 (Opsional)"></div>
+                    <div class="mb-2"><input type="url" class="form-control link-pub-input" placeholder="Link 4 (Opsional)"></div>
+                    <div class="mb-2"><input type="url" class="form-control link-pub-input" placeholder="Link 5 (Opsional)"></div>
+                    <div class="mt-3">
+                        <label class="form-label small fw-bold">Tanggal Publikasi</label>
+                        <input type="date" id="pubTanggal" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-dark">Publish Konten</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<hr class="my-5">
+<h4 class="fw-bold text-dark mb-4"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Analitik & Hasil Publikasi</h4>
+<div class="row mb-4">
+    <div class="col-md-5">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <h6 class="fw-bold text-center">Target Publikasi (<span id="lblTargetChart">Bulan Ini</span>)</h6>
+                <div style="height: 250px;"><canvas id="chartTargetPublikasi"></canvas></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <h6 class="fw-bold text-center">Sebaran Jenis Konten (<span id="lblJenisChart">Bulan Ini</span>)</h6>
+                <div style="height: 250px;"><canvas id="chartJenisKonten"></canvas></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-5">
+    <div class="card-body">
+        <h6 class="fw-bold mb-3">Tabel Desain Sudah Publikasi</h6>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle table-sm" id="tablePublished" style="font-size: 0.85rem;">
+                <thead class="table-success">
+                    <tr>
+                        <th width="5%">NO</th>
+                        <th width="15%">JENIS KONTEN</th>
+                        <th width="30%">JUDUL</th>
+                        <th width="20%">TGL PUBLIKASI</th>
+                        <th width="30%">LINK POST</th>
+                    </tr>
+                </thead>
+                <tbody id="bodyTablePublished"></tbody>
+            </table>
+        </div>
+    </div>
+</div>

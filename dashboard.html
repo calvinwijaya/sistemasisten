@@ -16,6 +16,8 @@
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="thl/trackerMedia.css">
     <style>
         body {
             min-height: 100vh;
@@ -98,6 +100,7 @@
                         <li><a href="#" onclick="loadPage(event, 'dosen/lihatPendaftar.html','lihatPendaftar')" class="nav-link"><i class="bi bi-people me-2"></i>Pendaftar</a></li>
                         <li><a href="#" onclick="loadPage(event, 'dosen/monitorAsisten.html','monitorAsisten')" class="nav-link"><i class="bi bi-display me-2"></i>Monitor Asisten</a></li>
                         <li><a href="#" onclick="loadPage(event, 'dosen/monitorThl.html','monitorThl')" class="nav-link"><i class="bi bi-person-check me-2"></i>Monitor THL</a></li>
+                        <li><a href="#" onclick="loadPage(event, 'thl/trackerMedia.html','trackerMedia')" class="nav-link"><i class="bi bi-palette-fill me-2"></i>Tracker Media</a></li>
                     </ul>
                 </div>
             </li>
@@ -124,6 +127,7 @@
                 <div class="collapse ps-3" id="thlMenu">
                     <ul class="nav flex-column">
                         <li><a href="#" onclick="loadPage(event, 'thl/buatLogbook.html','buatLogbook')" class="nav-link"><i class="bi bi-journal-plus me-2"></i>Buat Logbook</a></li>
+                        <li><a href="#" onclick="loadPage(event, 'thl/trackerMedia.html','trackerMedia')" class="nav-link"><i class="bi bi-palette-fill me-2"></i>Tracker Media</a></li>
                     </ul>
                 </div>
             </li>
@@ -318,6 +322,10 @@
                         loadScript('thl/buatLogbook.js', () => {
                             if (typeof initBuatLogbook === 'function') initBuatLogbook();
                         });
+                    } else if (finalKey === 'trackerMedia') {
+                        loadScript('thl/trackerMedia.js', () => {
+                            if (typeof initTrackerMedia === 'function') initTrackerMedia();
+                        });
                     }
                 })
                 .catch(err => {
@@ -359,7 +367,8 @@
                 'daftarAsisten': 'asisten/daftarAsisten.html',
                 'lihatStatus': 'asisten/lihatStatus.html',
                 'asistensi': 'asisten/asistensi.html',
-                'buatLogbook': 'thl/buatLogbook.html'
+                'buatLogbook': 'thl/buatLogbook.html',
+                'trackerMedia': 'thl/trackerMedia.html'
             };
 
             if (pageKey && routes[pageKey]) {

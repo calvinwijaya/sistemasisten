@@ -1,0 +1,72 @@
+/* CSS Custom untuk Visual Tracker / Stepper */
+.stepper-wrapper {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+    position: relative;
+}
+.stepper-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    text-align: center;
+}
+.stepper-item::before {
+    position: absolute;
+    content: "";
+    border-bottom: 2px solid #ccc;
+    width: 100%;
+    top: 15px;
+    left: -50%;
+    z-index: 2;
+}
+.stepper-item::after {
+    position: absolute;
+    content: "";
+    border-bottom: 2px solid #ccc;
+    width: 100%;
+    top: 15px;
+    left: 50%;
+    z-index: 2;
+}
+.stepper-item .step-counter {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #ccc;
+    color: white;
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+.stepper-item.completed .step-counter,
+.stepper-item.active .step-counter {
+    background-color: #0d6efd;
+}
+.stepper-item.completed::after,
+.stepper-item.completed::before,
+.stepper-item.active::before {
+    border-bottom-color: #0d6efd;
+}
+.stepper-item:first-child::before,
+.stepper-item:last-child::after {
+    content: none;
+}
+.step-name {
+    font-size: 0.65rem;
+    color: #6c757d;
+    line-height: 1.2;
+    padding: 0 5px;
+}
+.stepper-item.active .step-name {
+    font-weight: bold;
+    color: #0d6efd;
+}
+
+.tracker-header { background-color: #165cc4; }

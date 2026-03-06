@@ -779,11 +779,29 @@ function renderCharts(publishedData, filterBulan) {
     document.getElementById("lblJenisChart").textContent = filterBulan === "Semua" ? "Tahun Ini" : filterBulan;
     document.getElementById("lblMedsosChart").textContent = filterBulan === "Semua" ? "Tahun Ini" : filterBulan;
 
-    const count = publishedData.length;
-    const target = filterBulan === "Semua" ? 384 : 32;
-    const persentase = target > 0 ? ((count / target) * 100).toFixed(1) : 0;
+    // 1. PENGHITUNGAN BARU: Hitung Total Publikasi berdasarkan jumlah platform Sosmed
+    let totalPublikasiSosmed = 0;
+    const countsByMedsos = {}; // Objek untuk Bar Chart Medsos
 
-    // 1. PLUGIN CUSTOM UNTUK TEKS DI TENGAH DOUGHNUT CHART
+    publishedData.forEach(r => {
+        if(r.medsos) {
+            // Pecah string "IG, YT, Website" menjadi array
+            const arrMedsos = r.medsos.split(", ");
+            // Tambahkan jumlah platform ke total publikasi
+            totalPublikasiSosmed += arrMedsos.length;
+            
+            // Hitung untuk Bar Chart Distribusi Medsos sekalian
+            arrMedsos.forEach(sosmed => {
+                countsByMedsos[sosmed] = (countsByMedsos[sosmed] || 0) + 1;
+            });
+        }
+    });
+
+    const target = filterBulan === "Semua" ? 384 : 32;
+    // Hitung persentase berdasarkan perhitungan baru
+    const persentase = target > 0 ? ((totalPublikasiSosmed / target) * 100).toFixed(1) : 0;
+
+    // 2. PLUGIN CUSTOM UNTUK TEKS DI TENGAH DOUGHNUT CHART
     const centerTextPlugin = {
         id: 'centerText',
         beforeDraw: function(chart) {
@@ -792,11 +810,10 @@ function renderCharts(publishedData, filterBulan) {
                   ctx = chart.ctx;
 
             ctx.restore();
-            // Menyesuaikan ukuran font secara dinamis dengan tinggi chart
             const fontSize = (height / 110).toFixed(2);
             ctx.font = "bold " + fontSize + "em sans-serif";
             ctx.textBaseline = "middle";
-            ctx.fillStyle = "#198754"; // Warna hijau success agar senada
+            ctx.fillStyle = "#198754"; 
 
             const text = persentase + "%",
                   textX = Math.round((width - ctx.measureText(text).width) / 2),
@@ -813,24 +830,24 @@ function renderCharts(publishedData, filterBulan) {
         data: { 
             labels: ['Tercapai', 'Sisa Target'], 
             datasets: [{ 
-                data: [count, Math.max(0, target - count)], 
+                // Gunakan totalPublikasiSosmed di sini
+                data: [totalPublikasiSosmed, Math.max(0, target - totalPublikasiSosmed)], 
                 backgroundColor: ['#198754', '#e9ecef'],
-                borderWidth: 0 // Menghilangkan garis tepi agar lebih bersih
+                borderWidth: 0 
             }] 
         },
         options: { 
             responsive: true, 
             maintainAspectRatio: false,
-            cutout: '75%', // Memperbesar lubang di tengah agar teks muat
+            cutout: '75%', 
             plugins: {
                 legend: { position: 'bottom' }
             }
         },
-        plugins: [centerTextPlugin] // Memasukkan plugin teks ke dalam chart
+        plugins: [centerTextPlugin] 
     });
 
-    // 2. MENGHITUNG DATA UNTUK BAR CHART
-    // Chart Jenis Konten (Tetap sama)
+    // 3. MENGHITUNG DATA UNTUK BAR CHART (Jenis Konten)
     const countsByJenis = {};
     publishedData.forEach(r => { countsByJenis[r.jenisKonten] = (countsByJenis[r.jenisKonten] || 0) + 1; });
     const maxJenis = Math.max(0, ...Object.values(countsByJenis));
@@ -842,15 +859,8 @@ function renderCharts(publishedData, filterBulan) {
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: maxJenis + 2, ticks: { stepSize: 1, precision: 0 } } } }
     });
 
-    // BARU: Chart Distribusi Medsos
-    const countsByMedsos = {};
-    publishedData.forEach(r => {
-        if(r.medsos) {
-            r.medsos.split(", ").forEach(sosmed => {
-                countsByMedsos[sosmed] = (countsByMedsos[sosmed] || 0) + 1;
-            });
-        }
-    });
+    // 4. CHART DISTRIBUSI MEDSOS
+    // (countsByMedsos sudah dihitung di looping pertama untuk efisiensi)
     const maxMedsos = Math.max(0, ...Object.values(countsByMedsos));
 
     if(chartSosmedInstance) chartSosmedInstance.destroy();

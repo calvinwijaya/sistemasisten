@@ -426,3 +426,42 @@
         </div>
     </div>
 </div>
+
+<div id="sectionBebanKerjaDosen" class="d-none">
+    <hr class="my-5 border-2 border-secondary">
+    <div class="d-flex align-items-center mb-4">
+        <h4 class="fw-bold text-dark m-0"><i class="bi bi-people-fill text-primary me-2"></i>Beban Kerja Tim Media</h4>
+        <span class="badge bg-danger ms-3"><i class="bi bi-lock-fill me-1"></i>Akses Khusus Dosen</span>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h6 class="fw-bold text-center">Akumulasi Beban Kerja THL (Bobot: Desainer = 2, Copywriter = 1)</h6>
+                    <div style="height: 300px;"><canvas id="chartBebanKerja"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-5">
+        <div class="card-body">
+            <h6 class="fw-bold mb-3">Tabel Rincian Tugas per THL</h6>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle table-sm" id="tableBebanKerja" style="font-size: 0.85rem;">
+                    <thead class="table-primary">
+                        <tr>
+                            <th width="5%" class="text-center">NO</th>
+                            <th width="20%">NAMA THL</th>
+                            <th width="15%">PERAN TUGAS</th>
+                            <th width="50%">JUDUL KONTEN</th>
+                            <th width="10%" class="text-center">BOBOT</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bodyTableBebanKerja"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

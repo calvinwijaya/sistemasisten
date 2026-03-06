@@ -5,6 +5,7 @@ let rawTrackerData = [];
 let chartTargetInstance = null;
 let chartJenisInstance = null;
 let chartSosmedInstance = null;
+let chartBebanInstance = null;
 let filterState = { dosenPesanan: false, dosenQC: false, thlDesain: false, thlCopy: false };
 
 async function initTrackerMedia() {
@@ -183,6 +184,14 @@ function renderSemuaUI() {
     renderTrackerTable(activeData);
     renderPublishedTable(publishedData);
     renderCharts(publishedData, filterBulan);
+
+    if (currentRole === "dosen") {
+        document.getElementById("sectionBebanKerjaDosen").classList.remove("d-none");
+        // Kita menggunakan filteredData agar tabel & chartnya menyesuaikan filter bulan/tahun yang sedang aktif
+        renderBebanKerjaDosen(filteredData); 
+    } else {
+        document.getElementById("sectionBebanKerjaDosen").classList.add("d-none");
+    }
 }
 
 function renderTrackerTable(data) {
@@ -876,4 +885,77 @@ function renderCharts(publishedData, filterBulan) {
             scales: { y: { beginAtZero: true, max: maxMedsos + 2, ticks: { stepSize: 1, precision: 0 } } } 
         }
     });
+}
+
+function renderBebanKerjaDosen(data) {
+    const bebanMap = {}; // Format: { "Fadil": 4, "Natasha": 3 }
+    const detailTugas = []; // Array of object untuk tabel rincian
+
+    data.forEach(row => {
+        // 1. Ekstrak Desainer (Bobot 2)
+        if (row.desainer) {
+            const desainerArr = row.desainer.split(", ");
+            desainerArr.forEach(nama => {
+                if (!nama.trim()) return;
+                bebanMap[nama] = (bebanMap[nama] || 0) + 2;
+                detailTugas.push({ nama: nama, peran: "Desainer", judul: row.judul, bobot: 2 });
+            });
+        }
+        
+        // 2. Ekstrak Copywriter (Bobot 1)
+        if (row.copywriter) {
+            const copyArr = row.copywriter.split(", ");
+            copyArr.forEach(nama => {
+                if (!nama.trim()) return;
+                bebanMap[nama] = (bebanMap[nama] || 0) + 1;
+                detailTugas.push({ nama: nama, peran: "Copywriter", judul: row.judul, bobot: 1 });
+            });
+        }
+    });
+
+    // 3. Render Chart (Diurutkan dari beban terberat ke teringan)
+    const sortedNames = Object.keys(bebanMap).sort((a, b) => bebanMap[b] - bebanMap[a]);
+    const sortedValues = sortedNames.map(name => bebanMap[name]);
+
+    if(chartBebanInstance) chartBebanInstance.destroy();
+    chartBebanInstance = new Chart(document.getElementById('chartBebanKerja'), {
+        type: 'bar',
+        data: { 
+            labels: sortedNames, 
+            datasets: [{ 
+                label: 'Total Bobot Kinerja', 
+                data: sortedValues, 
+                backgroundColor: '#fd7e14', // Warna orange agar beda dari chart lain
+                borderRadius: 4 
+            }] 
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            plugins: { legend: { display: false } }, 
+            scales: { 
+                y: { 
+                    beginAtZero: true, 
+                    ticks: { stepSize: 1, precision: 0 } 
+                } 
+            } 
+        }
+    });
+
+    // 4. Render Tabel (Diurutkan berdasarkan Nama THL, lalu Peran)
+    detailTugas.sort((a, b) => a.nama.localeCompare(b.nama) || b.bobot - a.bobot);
+    
+    let html = "";
+    detailTugas.forEach((t, i) => {
+        let badgePeran = t.peran === "Desainer" ? "bg-primary" : "bg-success";
+        html += `<tr>
+            <td class="text-center">${i + 1}</td>
+            <td class="fw-bold">${t.nama}</td>
+            <td><span class="badge ${badgePeran}">${t.peran}</span></td>
+            <td>${t.judul}</td>
+            <td class="text-center fw-bold text-danger">${t.bobot}</td>
+        </tr>`;
+    });
+    
+    document.getElementById("bodyTableBebanKerja").innerHTML = html || `<tr><td colspan="5" class="text-center text-muted py-3">Belum ada data pengerjaan dari THL pada periode ini.</td></tr>`;
 }

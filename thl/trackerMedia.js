@@ -255,7 +255,6 @@ function renderTrackerTable(data) {
 
 // 2. FUNGSI AKSI: Tambah tombol Mata (Detail) dan Teks Desainer
 function generateAksiStatus(row) {
-    // Memberikan warna badge otomatis agar lebih intuitif
     let badgeColor = "bg-dark";
     if (row.status.includes("Revisi")) badgeColor = "bg-danger";
     else if (row.status === "QC") badgeColor = "bg-warning text-dark";
@@ -268,7 +267,10 @@ function generateAksiStatus(row) {
     
     let btnEdit = "";
     const myKode = getKodeDosenByNama(JSON.parse(sessionStorage.getItem("user")).nama);
-    if (currentRole === "dosen" && row.pemberiOrder === myKode && row.status !== "Published") {
+    
+    const isAdmin = typeof ADMIN_EMAILS !== 'undefined' && ADMIN_EMAILS.includes(currentUserEmail);
+
+    if ((currentRole === "dosen" && row.pemberiOrder === myKode && row.status !== "Published") || (isAdmin && row.status !== "Published")) {
         btnEdit = `<button class="btn btn-sm btn-outline-primary me-1" title="Edit Pesanan" onclick="editPesanan('${row.orderId}')"><i class="bi bi-pencil"></i></button>`;
     }
 
@@ -276,7 +278,6 @@ function generateAksiStatus(row) {
         if (row.status === "Request") {
             aksiHtml = `<button class="btn btn-sm btn-primary" onclick="terimaTugas('${row.orderId}', 'Desainer')">Terima Desain</button>`;
         } 
-        // 1. TAHAP DESAIN (Termasuk Revisi Desain & Revisi Keduanya)
         else if (row.status === "On Process" || row.status === "Revisi Desain" || row.status === "Revision") {
             if (row.desainer && row.desainer.includes(currentNamaPanggilan)) {
                 aksiHtml = `<button class="btn btn-sm btn-info" onclick="bukaModalDraft('${row.orderId}')">Unggah Desain</button>`;
@@ -287,7 +288,6 @@ function generateAksiStatus(row) {
         else if (row.status === "Wait Copywrite") {
             aksiHtml = `<button class="btn btn-sm btn-secondary" onclick="terimaTugas('${row.orderId}', 'Copywriter')">Terima Copywriting</button>`;
         } 
-        // 2. TAHAP COPYWRITE (Termasuk Revisi Caption)
         else if (row.status === "Copywrite" || row.status === "Revisi Caption") {
             if (row.copywriter && row.copywriter.includes(currentNamaPanggilan)) {
                 aksiHtml = `<button class="btn btn-sm btn-warning text-dark" onclick="bukaModalCopywrite('${row.orderId}')">Unggah Caption</button>`;
@@ -299,12 +299,14 @@ function generateAksiStatus(row) {
             aksiHtml = `<button class="btn btn-sm btn-dark" onclick="bukaModalPublikasi('${row.orderId}')">Publikasi Konten</button>`;
         }
     } 
-    else if (currentRole === "dosen") {
-        if (row.status === "Request" && row.pemberiOrder === myKode) {
-            aksiHtml = `<button class="btn btn-sm btn-outline-danger" title="Hapus" onclick="hapusPesanan('${row.orderId}')"><i class="bi bi-trash"></i></button>`;
+    else if (currentRole === "dosen" || isAdmin) { 
+        if (row.status === "Request") {
+            if (row.pemberiOrder === myKode || isAdmin) {
+                aksiHtml = `<button class="btn btn-sm btn-outline-danger" title="Hapus" onclick="hapusPesanan('${row.orderId}')"><i class="bi bi-trash"></i></button>`;
+            }
         } 
         else if (row.status === "QC") {
-            if(row.reviewer === myKode || row.pemberiOrder === myKode) {
+            if(row.reviewer === myKode || row.pemberiOrder === myKode || isAdmin) {
                 aksiHtml = `<button class="btn btn-sm btn-warning text-dark" onclick="bukaModalQC('${row.orderId}')">Cek QC</button>`;
             } else {
                 aksiHtml = `<span class="small text-muted fst-italic">Menunggu QC dari ${row.reviewer}</span>`;
@@ -319,7 +321,6 @@ function generateAksiStatus(row) {
         picInfo = `<div class="small mt-1 text-success"><i class="bi bi-pen me-1"></i>${row.copywriter}</div>`;
     }
 
-    // Tampilkan catatan dosen di semua state revisi
     if(row.catatanRevisi && row.status.includes("Revisi")) {
         picInfo += `<div class="small text-danger mt-1 fw-bold">Note QC: ${row.catatanRevisi}</div>`;
     }

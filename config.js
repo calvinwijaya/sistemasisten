@@ -48,4 +48,4 @@ const ENDPOINT_THL_KEBUTUHAN = `${ENDPOINT_THL_MASTER}?action=getKebutuhan`;
 const ENDPOINT_THL_TERPILIH  = `${ENDPOINT_THL_MASTER}?action=getTerpilih`;
 const ENDPOINT_THL_LOGBOOK   = ENDPOINT_THL_MASTER;
 
-ENDPOINT_TRACKER_MEDIA = "https://script.google.com/macros/s/AKfycbyhtjQpVacRw5wX1rPF7PX3DOkaeXTskO49zri_J0iHzp6s6XuEhgR1cRGOIZUPxlfM1A/exec";
+ENDPOINT_TRACKER_MEDIA = "https://script.google.com/macros/s/AKfycbzLCodg0KubzjmQTBrZhS4IcEEeG6N3K0gPfDFNjRGsOTGmJW5xsVekbWSZx-E-hFKK-g/exec";

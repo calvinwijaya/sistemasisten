@@ -72,8 +72,11 @@ function setupEventListeners() {
         const btn = document.getElementById("btnSubmitPesanan");
         btn.disabled = true;
         
-        const mode = btn.getAttribute("data-mode"); // "create" atau "edit"
+        const mode = btn.getAttribute("data-mode");
         const orderId = btn.getAttribute("data-order-id");
+
+        const medsosSelect = document.getElementById("tmdMedsos");
+        const selectedMedsos = Array.from(medsosSelect.selectedOptions).map(opt => opt.value).join(", ");
 
         const payload = {
             action: mode === "create" ? "createOrder" : "editOrder",
@@ -81,7 +84,8 @@ function setupEventListeners() {
                 jenisKonten: document.getElementById("tmdJenis").value,
                 judul: document.getElementById("tmdJudul").value,
                 detail: document.getElementById("tmdDetail").value,
-                linkDokumentasi: document.getElementById("tmdDokumentasi").value
+                linkDokumentasi: document.getElementById("tmdDokumentasi").value,
+                medsos: selectedMedsos
             }
         };
 
@@ -97,8 +101,6 @@ function setupEventListeners() {
         Swal.fire({ title: mode === "create" ? 'Membuat Pesanan...' : 'Menyimpan Perubahan...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
         postTrackerAPI(payload, 'modalPesananDesain');
     });
-
-    // ... sisanya bisa dipertahankan seperti biasa karena modal lain tidak di-override dinamis.
 }
 
 
@@ -396,10 +398,19 @@ window.editPesanan = function(orderId) {
     document.getElementById("tmdDetail").value = row.detail;
     document.getElementById("tmdDokumentasi").value = row.linkDokumentasi;
 
+    const medsosSelect = document.getElementById("tmdMedsos");
+    Array.from(medsosSelect.options).forEach(opt => opt.selected = false);
+    if (row.medsos) {
+        const selectedArr = row.medsos.split(", ");
+        Array.from(medsosSelect.options).forEach(opt => {
+            if (selectedArr.includes(opt.value)) opt.selected = true;
+        });
+    }
+
     document.getElementById("modalPesananDesain").querySelector(".modal-title").innerText = "Edit Pesanan Desain";
     
     const btn = document.getElementById("btnSubmitPesanan");
-    btn.setAttribute("data-mode", "edit"); // Memberi tahu setupEventListeners() bahwa ini mode Edit
+    btn.setAttribute("data-mode", "edit");
     btn.setAttribute("data-order-id", orderId);
     btn.disabled = false; btn.innerText = "Simpan Perubahan";
 

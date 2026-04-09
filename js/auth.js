@@ -3,8 +3,8 @@ let currentRole = "";
 // Daftar Endpoint GAS
 const ENDPOINTS = {
   dosen: "https://script.google.com/macros/s/AKfycbxYh8AO79OHElYXHClU7UyNPhMhXbr-AdFfa514M2s8YYIrrTcJO3GsFuZbnPuxOUZU/exec",
-  mahasiswa: "https://script.google.com/macros/s/AKfycbygalRAuM27-77OhOGfdFSOLCJR54sBSDBePech_5JZPFYBtUldVXHnss7VyNBuM5ZlnQ/exec",
-  thl: "https://script.google.com/macros/s/AKfycbxjOOgHDh-5bsJmEKjv8GLjAV1aysS1t8U4Xb-A35ohrUX6kEgoo8fwXv0YHDM-l9Vgfw/exec"
+  mahasiswa: "https://script.google.com/macros/s/AKfycbxkbjhlCpid918SizV5XCb10zmQXFO3KfS4z00DwEETvYkf2ULohc5_JUuL4n64FGs5Eg/exec",
+  thl: "https://script.google.com/macros/s/AKfycby6yaIU2R0OrcxA_RjjruHeYDawkdL7FsK6R9HmtULckhaNiK2O1_afdcd0OTysOQKzQQ/exec"
 };
 
 function setRole(role) {
@@ -44,15 +44,24 @@ window.onload = function () {
 function handleCredentialResponse(response) {
   const idToken = response.credential;
 
+  // 1. Tampilkan Loading Spinner menggunakan SweetAlert
+  Swal.fire({
+    title: 'Memeriksa Kredensial...',
+    text: 'Mohon tunggu sebentar',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
   if (!currentRole) {
-    alert("Silakan klik salah satu tombol login kembali.");
+    // Diganti menggunakan Swal agar konsisten
+    Swal.fire('Perhatian', 'Silakan klik salah satu tombol login kembali.', 'warning');
     return;
   }
 
   // Pilih URL berdasarkan role yang diklik
   const targetUrl = ENDPOINTS[currentRole];
-
-  showSuccessMessage(`Memverifikasi akses ${currentRole}...`);
 
   fetch(targetUrl, {
     method: "POST",
@@ -65,34 +74,40 @@ function handleCredentialResponse(response) {
   .then(res => res.json())
   .then(data => {
     if (data.status === "ok") {
-      // Simpan data user dan role untuk pengecekan di dashboard.html
+      // Simpan data user dan role untuk pengecekan
       sessionStorage.setItem("user", JSON.stringify(data.user));
       sessionStorage.setItem("role", currentRole);
 
-      showSuccessMessage(`Login ${currentRole} berhasil! Membuka Dashboard...`);
+      // --- SCRIPT POPUP SUKSES DIMASUKKAN DI SINI ---
+      Swal.fire({
+        icon: 'success',
+        title: 'Login Berhasil!',
+        text: 'Membuka Sistem Asisten...',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#1e7e34' // Warna hijau
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = "dashboard.html"; 
+        }
+      });
 
-      setTimeout(() => {
-        window.location.href = "dashboard.html";
-      }, 1500);
     } else {
-      showErrorMessage(data.message || `Email tidak terdaftar sebagai ${currentRole}.`);
+      Swal.fire({
+        icon: 'error',
+        title: 'Akses Ditolak',
+        text: data.message || `Email tidak terdaftar sebagai ${currentRole}.`,
+        confirmButtonColor: '#b02a37'
+      });
     }
   })
   .catch(err => {
+    // --- SCRIPT POPUP CATCH ERROR DIMASUKKAN DI SINI ---
     console.error(err);
-    showErrorMessage("Terjadi kesalahan koneksi server.");
+    Swal.fire({
+      icon: 'error',
+      title: 'Kesalahan Sistem',
+      text: 'Terjadi masalah saat menghubungi server.',
+      confirmButtonColor: '#b02a37'
+    });
   });
 }
-
-function showSuccessMessage(message) {
-  const box = document.getElementById("login-message");
-  box.textContent = message;
-  box.className = "success";
-}
-
-function showErrorMessage(message) {
-  const box = document.getElementById("login-message");
-  box.textContent = message;
-  box.className = "error";
-}
-

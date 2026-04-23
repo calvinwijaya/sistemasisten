@@ -2,9 +2,9 @@ let currentRole = "";
 
 // Daftar Endpoint GAS
 const ENDPOINTS = {
-  dosen: "https://script.google.com/macros/s/AKfycbxYh8AO79OHElYXHClU7UyNPhMhXbr-AdFfa514M2s8YYIrrTcJO3GsFuZbnPuxOUZU/exec",
-  mahasiswa: "https://script.google.com/macros/s/AKfycbxkbjhlCpid918SizV5XCb10zmQXFO3KfS4z00DwEETvYkf2ULohc5_JUuL4n64FGs5Eg/exec",
-  thl: "https://script.google.com/macros/s/AKfycby6yaIU2R0OrcxA_RjjruHeYDawkdL7FsK6R9HmtULckhaNiK2O1_afdcd0OTysOQKzQQ/exec"
+  dosen: GAS_LOGIN_DOSEN,
+  mahasiswa: GAS_LOGIN_MAHASISWA,
+  thl: GAS_LOGIN_THL
 };
 
 function setRole(role) {

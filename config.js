@@ -42,6 +42,10 @@ function getNamaDosen(kode) {
 }
 
 // ==== CONFIG ====
+const GAS_LOGIN_DOSEN = "https://script.google.com/macros/s/AKfycbxYh8AO79OHElYXHClU7UyNPhMhXbr-AdFfa514M2s8YYIrrTcJO3GsFuZbnPuxOUZU/exec";
+const GAS_LOGIN_MAHASISWA = "https://script.google.com/macros/s/AKfycbxkbjhlCpid918SizV5XCb10zmQXFO3KfS4z00DwEETvYkf2ULohc5_JUuL4n64FGs5Eg/exec";
+const GAS_LOGIN_THL = "https://script.google.com/macros/s/AKfycby6yaIU2R0OrcxA_RjjruHeYDawkdL7FsK6R9HmtULckhaNiK2O1_afdcd0OTysOQKzQQ/exec";
+
 const ENDPOINT_MK = "https://script.google.com/macros/s/AKfycbxnTj9gdOyExoS048kAruhBB8MXQfwIpJTfoGU2m6lQ1kNKSsdwPeC7FCxW9CI--Kqulw/exec";
 const ENDPOINT_PENDAFTARAN = "https://script.google.com/macros/s/AKfycbxa32wiCAXF_ZJMn9my8nWQ5eeZOKAXH3nAeRWzUJJXK3ymUPtd7FKZ_ttZzrNEQKYzLA/exec";
 const ENDPOINT_TERPILIH = "https://script.google.com/macros/s/AKfycbx5F_l-w67oVhaSIWU1N23xW1hzgJFXrGhPdKDJXOKxB1dbxxgIKyklYF7TRtRBknaQrg/exec";

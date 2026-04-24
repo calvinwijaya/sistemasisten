@@ -614,7 +614,19 @@ window.bukaModalPublikasi = function(orderId) {
     document.getElementById("pubMedsos").textContent = row.medsos || "-";
     document.getElementById("pubCaptionView").value = row.caption || "Tidak ada caption.";
 
-    // Set default tanggal hari ini pada input tanggal publikasi (Opsional, agar lebih cepat)
+    // 3. LOGIKA BARU: Cek Kewajiban Link 1 berdasarkan E-Mail
+    const inputLink1 = document.getElementById("pubLink1");
+    if (row.medsos && row.medsos.includes("E-Mail")) {
+        // Jika E-mail, hapus required dan ubah placeholder
+        inputLink1.removeAttribute("required");
+        inputLink1.placeholder = "Link 1 (Opsional khusus E-Mail)";
+    } else {
+        // Jika selain E-mail, pastikan required tetap ada
+        inputLink1.setAttribute("required", "required");
+        inputLink1.placeholder = "Link 1 (Wajib)";
+    }
+
+    // Set default tanggal hari ini pada input tanggal publikasi
     document.getElementById("pubTanggal").valueAsDate = new Date();
 
     new bootstrap.Modal(document.getElementById('modalPublikasi')).show();
@@ -694,8 +706,12 @@ document.getElementById("formPublikasi").addEventListener("submit", function(e) 
     Swal.fire({ title: 'Mempublikasikan Konten...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
     
     postTrackerAPI({
-        action: "updateStatus", orderId: document.getElementById("pubOrderId").value,
-        status: "Published", linkPost: links.join(", "), jadwalPublikasi: document.getElementById("pubTanggal").value
+        action: "updateStatus", 
+        orderId: document.getElementById("pubOrderId").value,
+        status: "Published", 
+        // BARU: Berikan fallback "-" jika array links kosong (kasus email tanpa link)
+        linkPost: links.length > 0 ? links.join(", ") : "-", 
+        jadwalPublikasi: document.getElementById("pubTanggal").value
     }, 'modalPublikasi');
 });
 

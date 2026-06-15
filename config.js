@@ -5,7 +5,8 @@ const ADMIN_EMAILS = [
     "muhammad.rakha1803@mail.ugm.ac.id",
     "krishna.dut2002@mail.ugm.ac.id",
     "i.hanun.azizi@mail.ugm.ac.id",
-    "fadilasobasita@mail.ugm.ac.id"
+    "fadilasobasita@mail.ugm.ac.id",
+    "nuri_ana@ugm.ac.id",
 ];
 
 const DOSEN_MAP = {
